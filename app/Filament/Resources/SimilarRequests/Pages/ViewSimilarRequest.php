@@ -79,7 +79,7 @@ class ViewSimilarRequest extends ViewRecord
                 ->modalDescription('Örnek parçanın metinleriyle, fotoğrafsız ve “sadece link ile” görünür bir taslak oluşturulur.')
                 ->action(function (SimilarRequest $record) {
                     $original = $record->product;
-                    $piece = $original->replicate(['view_count', 'sku', 'images', 'og_image', 'sold_at', 'published_at', 'slug', 'stock', 'is_featured']);
+                    $piece = $original->replicate(['view_count', 'sku', 'images', 'og_image', 'sold_at', 'published_at', 'slug', 'stock', 'is_featured', 'deleted_at', 'compare_at_price']);
                     $piece->forceFill([
                         'type' => ProductType::Unique,
                         'name' => $original->name.' (özel)',

@@ -34,7 +34,10 @@ class EditProduct extends EditRecord
                 ->action(function (Product $record, $livewire) {
                     $request = $record->similarRequest;
                     // The customer must be able to open the link: publish, but keep it out of listings.
-                    $record->update(['status' => ProductStatus::Published, 'visibility' => ProductVisibility::Unlisted, 'published_at' => $record->published_at ?? now()]);
+                    $publishedAt = $record->published_at && $record->published_at->isPast() ? $record->published_at : now();
+                    $record->update(['status' => ProductStatus::Published, 'visibility' => ProductVisibility::Unlisted, 'published_at' => $publishedAt]);
+                    // Keep the open form in sync, otherwise a later "Kaydet" would put the piece back to draft.
+                    $this->refreshFormData(['status', 'visibility', 'published_at']);
                     $request->update(['status' => RequestStatus::InProgress]);
 
                     if ($request->isEmail()) {
@@ -44,7 +47,13 @@ class EditProduct extends EditRecord
                         return;
                     }
 
-                    $livewire->dispatch('open-url', url: $request->whatsappUrl('Merhaba, istediğiniz parça hazır: '.$record->url()));
+                    $whatsapp = $request->whatsappUrl('Merhaba, istediğiniz parça hazır: '.$record->url());
+                    $livewire->dispatch('open-url', url: $whatsapp);
+                    // Some phone browsers block tabs opened after a round-trip; the notification keeps a button.
+                    Notification::make()->success()->persistent()
+                        ->title('Parça yayında; mesajı WhatsApp’tan gönderin')
+                        ->actions([Action::make('whatsapp')->label('WhatsApp’ta aç')->url($whatsapp, shouldOpenInNewTab: true)])
+                        ->send();
                 }),
             Action::make('share')
                 ->label('Instagram linki')

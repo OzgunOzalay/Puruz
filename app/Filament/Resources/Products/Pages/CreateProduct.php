@@ -2,11 +2,10 @@
 
 namespace App\Filament\Resources\Products\Pages;
 
-use App\Enums\ProductStatus;
-use App\Enums\ProductVisibility;
 use App\Filament\Resources\Products\ProductResource;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Arr;
 
 class CreateProduct extends CreateRecord
 {
@@ -18,14 +17,10 @@ class CreateProduct extends CreateRecord
         return $this->getResource()::getUrl('edit', ['record' => $this->getRecord()]);
     }
 
-    /** "Oluştur ve yenisini ekle": start the next piece with the same type and categories. */
-    public function createAnother(): void
+    /** "Oluştur ve yenisini ekle": the next piece starts with the same type and categories; the rest comes from defaults. */
+    protected function preserveFormDataWhenCreatingAnother(array $data): array
     {
-        $keep = ['type' => $this->data['type'] ?? null, 'categories' => $this->data['categories'] ?? []];
-
-        parent::createAnother();
-
-        $this->form->fill($keep + ['status' => ProductStatus::Published->value, 'visibility' => ProductVisibility::Public->value]);
+        return Arr::only($data, ['type', 'categories']);
     }
 
     protected function getCreateAnotherFormAction(): Action

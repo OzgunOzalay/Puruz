@@ -203,4 +203,17 @@ class AdminProductsTest extends TestCase
             ->assertSee('/onizleme/urun/'.$draft->slug, false)
             ->assertSee('450 ₺');
     }
+
+    public function test_two_pieces_in_a_row_with_create_another(): void
+    {
+        $page = Livewire::test(CreateProduct::class)
+            ->fillForm(['type' => 'unique', 'name' => 'Kupa Bir', 'slug' => 'kupa-bir', 'price' => '500'])
+            ->call('createAnother')->assertHasNoFormErrors()
+            ->fillForm(['name' => 'Kupa İki', 'slug' => 'kupa-iki', 'price' => '600'])
+            ->call('createAnother')->assertHasNoFormErrors()
+            ->fillForm(['name' => 'Kupa Üç', 'slug' => 'kupa-uc', 'price' => '700'])
+            ->call('create')->assertHasNoFormErrors();
+
+        $this->assertSame(3, Product::query()->whereIn('slug', ['kupa-bir', 'kupa-iki', 'kupa-uc'])->count());
+    }
 }

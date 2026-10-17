@@ -135,4 +135,55 @@ class AdminSimilarRequestsTest extends TestCase
         $this->assertSame(RequestStatus::Done, $active->fresh()->status);
         $this->assertSame(RequestStatus::Cancelled, $cancelled->fresh()->status);
     }
+
+    public function test_saving_after_sending_the_link_keeps_the_piece_published(): void
+    {
+        $request = $this->request();
+        $piece = Product::factory()->unique()->create(['status' => ProductStatus::Draft, 'visibility' => ProductVisibility::Unlisted]);
+        $request->update(['created_product_id' => $piece->id]);
+
+        Livewire::test(EditProduct::class, ['record' => $piece->slug])
+            ->callAction('sendLink')
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(ProductStatus::Published, $piece->fresh()->status);
+        $this->get($piece->fresh()->url())->assertOk();
+    }
+
+    public function test_sending_the_link_makes_a_scheduled_piece_reachable_now(): void
+    {
+        $request = $this->request();
+        $piece = Product::factory()->unique()->create(['status' => ProductStatus::Draft, 'visibility' => ProductVisibility::Unlisted, 'published_at' => now()->addWeek()]);
+        $request->update(['created_product_id' => $piece->id]);
+
+        Livewire::test(EditProduct::class, ['record' => $piece->slug])->callAction('sendLink');
+
+        $this->get($piece->fresh()->url())->assertOk();
+    }
+
+    public function test_phone_link_also_shows_a_whatsapp_notification(): void
+    {
+        $request = $this->request(['contact' => '+905321234567', 'contact_type' => 'phone']);
+        $piece = Product::factory()->unique()->create(['status' => ProductStatus::Draft, 'visibility' => ProductVisibility::Unlisted]);
+        $request->update(['created_product_id' => $piece->id]);
+
+        Livewire::test(EditProduct::class, ['record' => $piece->slug])
+            ->callAction('sendLink')
+            ->assertNotified('Parça yayında; mesajı WhatsApp’tan gönderin');
+    }
+
+    public function test_create_piece_from_a_trashed_original_is_not_trashed_or_discounted(): void
+    {
+        $request = $this->request();
+        $request->product->update(['compare_at_price' => 99000]);
+        $request->product->delete();
+
+        Livewire::test(ViewSimilarRequest::class, ['record' => $request->id])->callAction('createPiece');
+
+        $piece = $request->fresh()->createdProduct;
+        $this->assertNotNull($piece);
+        $this->assertNull($piece->deleted_at);
+        $this->assertNull($piece->compare_at_price);
+    }
 }
