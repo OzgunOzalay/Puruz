@@ -35,28 +35,25 @@ class DemoSeeder extends Seeder
         $care = "Bulaşık makinesinde yıkanabilir.\nMikrodalgada kullanılabilir.\nAni sıcaklık değişimlerinden koruyun.";
 
         $products = [
-            ['Kobalt Kupa', 'kupalar', 'kupa-kobalt', 65000, null, 6, true, 'Derin kobalt sırlı, el yapımı stoneware kupa. Avuç içine tam oturan kulp.', '350 ml · 9 cm yükseklik', 'Stoneware, kurşunsuz sır'],
-            ['Kum Kupa', 'kupalar', 'kupa-kum', 60000, null, 1, true, 'Kum rengi mat sır, içi parlak. Her biri hafif farklı.', '300 ml', 'Stoneware'],
-            ['Yosun Kupa', 'kupalar', 'kupa-yesil', 60000, 72000, 4, false, 'Yosun yeşili akıntılı sır.', '320 ml', 'Stoneware'],
-            ['Benekli Servis Tabağı', 'tabaklar-kaseler', 'tabak-benekli', 95000, null, 3, true, 'Benekli beyaz sırlı geniş servis tabağı.', 'Ø 28 cm', 'Benekli stoneware'],
-            ['Kiremit Kase', 'tabaklar-kaseler', 'kase-terracotta', 55000, null, 0, false, 'Toprak kırmızısı salata ve meyve kasesi.', 'Ø 16 cm', 'Kırmızı kil'],
-            ['Uzun Siyah Vazo', 'vazolar', 'vazo-uzun', 120000, null, 2, true, 'Mat siyah, uzun boyunlu vazo.', '32 cm yükseklik', 'Siyah kil'],
-            ['Yuvarlak Vazo', 'vazolar', 'vazo-yuvarlak', 85000, null, 5, false, 'Kirli beyaz, yuvarlak gövdeli küçük vazo.', '18 cm yükseklik', 'Stoneware'],
+            ['Kobalt Kupa', 'kupalar', 'kupa-kobalt', 65000, null, null, true, 'Derin kobalt sırlı, el yapımı stoneware kupa. Avuç içine tam oturan kulp.', '350 ml · 9 cm yükseklik', 'Stoneware, kurşunsuz sır'],
+            ['Kum Kupa', 'kupalar', 'kupa-kum', 60000, null, 2, true, 'Kum rengi mat sır, içi parlak.', '300 ml', 'Stoneware'],
+            ['Yosun Kupa', 'kupalar', 'kupa-yesil', 60000, 72000, null, false, 'Yosun yeşili akıntılı sır.', '320 ml', 'Stoneware'],
+            ['Benekli Servis Tabağı', 'tabaklar-kaseler', 'tabak-benekli', 95000, null, null, true, 'Benekli beyaz sırlı geniş servis tabağı.', 'Ø 28 cm', 'Benekli stoneware'],
+            ['Kiremit Kase', 'tabaklar-kaseler', 'kase-terracotta', 55000, null, 5, false, 'Toprak kırmızısı salata ve meyve kasesi.', 'Ø 16 cm', 'Kırmızı kil'],
+            ['Uzun Siyah Vazo', 'vazolar', 'vazo-uzun', 120000, null, null, true, 'Mat siyah, uzun boyunlu vazo.', '32 cm yükseklik', 'Siyah kil'],
+            ['Yuvarlak Vazo', 'vazolar', 'vazo-yuvarlak', 85000, null, null, false, 'Kirli beyaz, yuvarlak gövdeli küçük vazo.', '18 cm yükseklik', 'Stoneware'],
         ];
 
-        foreach ($products as $i => [$name, $category, $image, $price, $compare, $stock, $featured, $short, $dimensions, $materials]) {
+        foreach ($products as $i => [$name, $category, $image, $price, $compare, $soldDaysAgo, $featured, $short, $dimensions, $materials]) {
             $product = Product::query()->create([
-                'type' => ProductType::Physical,
+                'type' => ProductType::Unique,
                 'name' => $name,
                 'slug' => Str::slug($name),
-                'sku' => 'PRZ-'.str_pad((string) ($i + 1), 3, '0', STR_PAD_LEFT),
                 'short_description' => $short,
-                'description' => '<p>'.$short.' Atölyemizde çarkta şekillendirilip iki kez fırınlandı. Elde yapıldığı için renk ve ölçülerde küçük farklılıklar olabilir.</p>',
+                'description' => '<p>'.$short.' Atölyemizde çarkta şekillendirilip iki kez fırınlandı. Her parça tek; renk ve dokusu fotoğraftakiyle aynıdır.</p>',
                 'images' => [$this->storeImage($image)],
                 'price' => $price,
                 'compare_at_price' => $compare,
-                'stock' => $stock,
-                'track_stock' => true,
                 'dimensions' => $dimensions,
                 'materials' => $materials,
                 'care' => $care,
@@ -64,35 +61,39 @@ class DemoSeeder extends Seeder
                 'visibility' => ProductVisibility::Public,
                 'is_featured' => $featured,
                 'sort_order' => $i,
-                'published_at' => now()->subDays(10 - $i),
+                'published_at' => now()->subDays(20 - $i),
+                'sold_at' => $soldDaysAgo ? now()->subDays($soldDaysAgo) : null,
             ]);
             $product->categories()->attach($categories[$category]);
         }
 
-        $espresso = Product::query()->create([
-            'type' => ProductType::Physical,
-            'name' => 'Espresso Fincanı',
-            'slug' => 'espresso-fincani',
-            'short_description' => 'İki renk seçeneğiyle siparişe özel espresso fincanı.',
-            'description' => '<p>Siparişiniz üzerine üretilir; sır rengini siz seçersiniz.</p>',
-            'images' => [$this->storeImage('espresso-seti')],
-            'price' => 45000,
-            'track_stock' => true,
-            'made_to_order' => true,
-            'lead_time_days' => 10,
-            'dimensions' => '90 ml',
-            'materials' => 'Stoneware',
-            'care' => $care,
-            'status' => ProductStatus::Published,
+        foreach ([['Espresso Fincanı · Kobalt', 'espresso-fincani-kobalt'], ['Espresso Fincanı · Kirli Beyaz', 'espresso-fincani-kirli-beyaz']] as [$name, $slug]) {
+            Product::query()->create([
+                'type' => ProductType::Unique,
+                'name' => $name,
+                'slug' => $slug,
+                'short_description' => 'Tek parça espresso fincanı.',
+                'description' => '<p>Çarkta şekillendirilmiş, tek parça espresso fincanı.</p>',
+                'images' => [$this->storeImage('espresso-seti')],
+                'price' => 45000,
+                'dimensions' => '90 ml',
+                'materials' => 'Stoneware',
+                'care' => $care,
+                'status' => ProductStatus::Published,
+                'visibility' => ProductVisibility::Public,
+                'published_at' => now()->subDays(3),
+            ])->categories()->attach($categories['kupalar']);
+        }
+
+        Product::query()->create([
+            'type' => ProductType::Unique,
+            'name' => 'Sırlı Küçük Tabak',
+            'slug' => 'sirli-kucuk-tabak',
+            'short_description' => 'Fırından yeni çıktı, fotoğrafları bekliyor.',
+            'price' => 40000,
+            'status' => ProductStatus::Draft,
             'visibility' => ProductVisibility::Public,
-            'is_featured' => true,
-            'published_at' => now()->subDay(),
-        ]);
-        $espresso->categories()->attach($categories['kupalar']);
-        $espresso->variants()->createMany([
-            ['name' => 'Kobalt', 'stock' => 8, 'sort_order' => 1],
-            ['name' => 'Kirli beyaz', 'stock' => 8, 'sort_order' => 2],
-        ]);
+        ])->categories()->attach($categories['tabaklar-kaseler']);
 
         $workshop = Product::query()->create([
             'type' => ProductType::Workshop,
