@@ -8,6 +8,7 @@ use App\Filament\Pages\ShopSettings;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\WorkshopSessions\Pages\ManageWorkshopSessions;
+use App\Filament\Widgets\SalesOverview;
 use App\Mail\OrderStatusChanged;
 use App\Models\Order;
 use App\Models\Product;
@@ -197,5 +198,18 @@ class AdminPanelTest extends TestCase
 
         $this->assertSame(12000, Settings::get('shipping_fee'));
         $this->assertSame(200000, Settings::get('free_shipping_threshold'));
+    }
+
+    public function test_dashboard_counts_pieces_for_sale_instead_of_low_stock(): void
+    {
+        $this->actingAs($this->admin());
+        Product::factory()->unique()->count(3)->create();
+        Product::factory()->unique()->sold()->create(['sold_at' => now()]);
+
+        Livewire::test(SalesOverview::class)
+            ->assertSee('Satışta')
+            ->assertSee('3 parça')
+            ->assertSee('bu ay 1 parça satıldı')
+            ->assertDontSee('Az stok');
     }
 }

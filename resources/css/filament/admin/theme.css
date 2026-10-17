@@ -54,3 +54,33 @@
     --fc-button-hover-border-color: rgb(255 255 255 / 0.1);
     color: var(--color-gray-200);
 }
+
+/* Minimal, data-first admin — see docs/superpowers/specs/2026-10-16-unique-pieces-design.md §4. */
+.fi-header-heading {
+    font-size: 1.375rem;
+    line-height: 1.875rem;
+    letter-spacing: -0.01em;
+}
+
+.fi-ta-text,
+.fi-in-text,
+.fi-wi-stats-overview-stat-value {
+    font-variant-numeric: tabular-nums;
+}
+
+.fi-ta-text:not(.fi-inline) {
+    padding-block: 0.625rem;
+}
+
+.fi-ta-row {
+    border-color: color-mix(in oklab, var(--color-gray-200) 60%, transparent);
+}
+
+.dark .fi-ta-row {
+    border-color: rgb(255 255 255 / 0.05);
+}
+
+.fi-badge {
+    box-shadow: none;
+    font-weight: 500;
+}

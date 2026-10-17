@@ -9,7 +9,6 @@ use App\Filament\Resources\Products\ProductResource;
 use App\Models\Order;
 use App\Models\Product;
 use App\Support\Money;
-use App\Support\Settings;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
@@ -27,9 +26,8 @@ class SalesOverview extends StatsOverviewWidget
             ->whereDate('paid_at', now()->subDays($daysAgo)->toDateString())->sum('total') / 100)->all();
 
         $toPack = Order::query()->whereIn('status', [OrderStatus::Paid, OrderStatus::Preparing])->count();
-        $lowStock = Product::query()->reachable()->where('type', ProductType::Physical)
-            ->where('track_stock', true)->where('made_to_order', false)->whereDoesntHave('variants')
-            ->where('stock', '<=', (int) Settings::get('low_stock_threshold', 2))->count();
+        $forSale = Product::query()->where('type', ProductType::Unique)->forSale()->where('stock', '>', 0)->count();
+        $soldThisMonth = Product::query()->where('type', ProductType::Unique)->where('sold_at', '>=', now()->startOfMonth())->count();
 
         return [
             Stat::make('Bugün', Money::format($revenue(now()->startOfDay())))
@@ -42,10 +40,10 @@ class SalesOverview extends StatsOverviewWidget
                 ->description($toPack ? 'Kargoya verilmeyi bekliyor' : 'Bekleyen sipariş yok')
                 ->color($toPack ? 'warning' : 'gray')
                 ->url(OrderResource::getUrl()),
-            Stat::make('Az stok', (string) $lowStock)
-                ->description('Satıştaki ürünler')
-                ->color($lowStock ? 'danger' : 'gray')
-                ->url(ProductResource::getUrl('index', ['tab' => 'sold_out'])),
+            Stat::make('Satışta', $forSale.' parça')
+                ->description($soldThisMonth ? 'bu ay '.$soldThisMonth.' parça satıldı' : 'bu ay henüz satış yok')
+                ->color('gray')
+                ->url(ProductResource::getUrl()),
         ];
     }
 }
