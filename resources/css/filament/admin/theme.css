@@ -2,3 +2,55 @@
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+
+/* Workshop calendar (FullCalendar) — follow the panel's colours and dark mode. */
+.puruz-calendar {
+    --fc-border-color: var(--color-gray-200);
+    --fc-today-bg-color: color-mix(in oklab, var(--color-primary-500) 8%, transparent);
+    --fc-neutral-bg-color: var(--color-gray-50);
+    --fc-page-bg-color: transparent;
+    --fc-button-bg-color: var(--color-white);
+    --fc-button-border-color: var(--color-gray-300);
+    --fc-button-text-color: var(--color-gray-700);
+    --fc-button-hover-bg-color: var(--color-gray-50);
+    --fc-button-hover-border-color: var(--color-gray-300);
+    --fc-button-active-bg-color: var(--color-primary-600);
+    --fc-button-active-border-color: var(--color-primary-600);
+    --fc-now-indicator-color: var(--color-danger-600);
+    font-size: 0.875rem;
+}
+
+.puruz-calendar .fc-button-active {
+    color: var(--color-white) !important;
+}
+
+.puruz-calendar .fc-toolbar-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.puruz-calendar .fc-toolbar.fc-header-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.puruz-calendar .fc-event {
+    cursor: pointer;
+}
+
+.puruz-calendar .puruz-session-hidden {
+    opacity: 0.45;
+    background-image: repeating-linear-gradient(45deg, transparent 0 6px, rgb(255 255 255 / 0.25) 6px 12px);
+}
+
+.dark .puruz-calendar {
+    --fc-border-color: rgb(255 255 255 / 0.1);
+    --fc-neutral-bg-color: rgb(255 255 255 / 0.05);
+    --fc-button-bg-color: var(--color-gray-800);
+    --fc-button-border-color: rgb(255 255 255 / 0.1);
+    --fc-button-text-color: var(--color-gray-200);
+    --fc-button-hover-bg-color: var(--color-gray-700);
+    --fc-button-hover-border-color: rgb(255 255 255 / 0.1);
+    color: var(--color-gray-200);
+}

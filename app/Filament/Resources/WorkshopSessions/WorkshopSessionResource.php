@@ -4,6 +4,7 @@ namespace App\Filament\Resources\WorkshopSessions;
 
 use App\Enums\ProductType;
 use App\Filament\Resources\WorkshopSessions\Pages\ManageWorkshopSessions;
+use App\Filament\Resources\WorkshopSessions\Pages\WorkshopCalendar;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NavigationGroup;
 use App\Models\OrderItem;
@@ -159,7 +160,7 @@ class WorkshopSessionResource extends Resource
     }
 
     /** Creates many sessions at once, e.g. every Tuesday and Thursday 11:00–14:00 and 19:00–22:00 in a month. */
-    private static function generateAction(bool $withProduct): Action
+    public static function generateAction(bool $withProduct = true): Action
     {
         return Action::make('generate')
             ->label('Toplu seans oluştur')
@@ -234,7 +235,7 @@ class WorkshopSessionResource extends Resource
             ->get();
     }
 
-    private static function exportAttendees(WorkshopSession $session): StreamedResponse
+    public static function exportAttendees(WorkshopSession $session): StreamedResponse
     {
         $items = self::attendees($session);
         $filename = 'katilimcilar-'.$session->starts_at->format('Y-m-d-Hi').'.csv';
@@ -265,7 +266,8 @@ class WorkshopSessionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ManageWorkshopSessions::route('/'),
+            'index' => WorkshopCalendar::route('/'),
+            'list' => ManageWorkshopSessions::route('/liste'),
         ];
     }
 }
