@@ -1,7 +1,9 @@
 @props(['product'])
 @php
+    $piece = $product->pieceState();
     $inStock = $product->isInStock();
-    $stock = $product->hasVariants() ? null : $product->availableStock();
+    $dimmed = $piece ? $piece === \App\Enums\PieceState::Sold : ! $inStock;
+    $stock = $product->hasVariants() || $product->isUnique() ? null : $product->availableStock();
     $cover = $product->coverImage();
 @endphp
 <a href="{{ $product->url() }}" class="group block">
@@ -10,7 +12,7 @@
             <img src="{{ \App\Support\ProductImages::url($cover, 800) }}"
                  @if ($srcset = \App\Support\ProductImages::srcset($cover)) srcset="{{ $srcset }}" sizes="(min-width: 1024px) 25vw, 50vw" @endif
                  alt="{{ $product->name }}" loading="lazy" decoding="async"
-                 class="size-full object-cover transition duration-500 group-hover:scale-[1.03] {{ $inStock ? '' : 'opacity-60 grayscale-[40%]' }}">
+                 class="size-full object-cover transition duration-500 group-hover:scale-[1.03] {{ $dimmed ? 'opacity-60 grayscale-[40%]' : '' }}">
         @else
             <div class="flex size-full items-center justify-center text-ink-faint">
                 <x-doodle.sun class="size-2/3 opacity-40" />
@@ -21,7 +23,9 @@
             @if ($product->isWorkshop())
                 <span class="badge bg-cobalt text-paper">atölye</span>
             @endif
-            @if (! $inStock)
+            @if ($piece === \App\Enums\PieceState::Sold)
+                <span class="badge bg-ink text-paper">satıldı</span>
+            @elseif (! $piece && ! $inStock)
                 <span class="badge bg-ink text-paper">tükendi</span>
             @elseif ($stock === 1)
                 <span class="badge bg-tile text-paper">son 1 adet</span>

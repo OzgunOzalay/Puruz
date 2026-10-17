@@ -8,7 +8,10 @@
     $sessions = $product->upcomingSessions;
     $bookable = $sessions->filter(fn ($s) => $s->isBookable());
     $inStock = $product->isInStock();
-    $stock = $variants->isEmpty() ? $product->availableStock() : null;
+    $piece = $product->pieceState();
+    $isSold = $piece === \App\Enums\PieceState::Sold;
+    $isReserved = $piece === \App\Enums\PieceState::Reserved;
+    $stock = $variants->isEmpty() && ! $product->isUnique() ? $product->availableStock() : null;
     $whatsapp = $settings['whatsapp_number'] ?? null;
     $waText = rawurlencode('Merhaba, "'.$product->name.'" hakkında bilgi almak istiyorum: '.$product->url());
     $defaultVariant = old('variant_id', $variants->first(fn ($v) => ! $product->track_stock || $v->stock > 0)?->id);
@@ -45,7 +48,7 @@
             'url' => $product->url(),
             'priceCurrency' => 'TRY',
             'price' => Money::toDecimal($product->price),
-            'availability' => $inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            'availability' => $inStock ? 'https://schema.org/InStock' : ($isSold ? 'https://schema.org/SoldOut' : 'https://schema.org/OutOfStock'),
         ],
     ]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}</script>
 @endpush
@@ -105,12 +108,16 @@
                 <x-shop.price :product="$product" size="lg" class="mt-4" />
 
                 <div class="mt-3 flex flex-wrap gap-2 text-sm">
-                    @if (! $inStock)
+                    @if ($isSold)
+                        <span class="badge bg-ink text-paper">satıldı</span>
+                    @elseif ($isReserved)
+                        <span class="badge bg-tile text-paper">şu an başka birinin sepetinde</span>
+                    @elseif (! $inStock)
                         <span class="badge bg-ink text-paper">{{ $product->isWorkshop() ? 'kontenjan dolu' : 'tükendi' }}</span>
                     @elseif ($stock !== null && $stock <= 3)
                         <span class="badge bg-tile text-paper">son {{ $stock }} adet</span>
                     @endif
-                    @if ($product->made_to_order)
+                    @if ($product->made_to_order && ! $product->isUnique())
                         <span class="badge bg-cobalt-soft text-cobalt">siparişe özel üretilir{{ $product->lead_time_days ? ' · '.$product->lead_time_days.' gün' : '' }}</span>
                     @endif
                 </div>
@@ -181,6 +188,9 @@
                 @endif
 
                 @if ($inStock)
+                    @if ($product->isUnique())
+                        <input type="hidden" name="quantity" value="1">
+                    @else
                     <div class="mt-7 flex items-center gap-3">
                         <span class="label mb-0">{{ $product->isWorkshop() ? 'Kişi' : 'Adet' }}</span>
                         <div class="flex items-center rounded-full border-[1.5px] border-line">
@@ -190,6 +200,7 @@
                             <button type="button" class="p-2.5" @click="qty = Math.min({{ $stock ?? \App\Services\Cart\CartService::MAX_QUANTITY }}, qty + 1)" aria-label="Arttır"><x-glyph name="plus" class="size-4" /></button>
                         </div>
                     </div>
+                    @endif
 
                     <div class="mt-6 hidden gap-3 sm:grid sm:grid-cols-2">
                         <button type="submit" class="btn-outline">sepete ekle</button>
@@ -197,7 +208,21 @@
                     </div>
                 @endif
 
-                @if ($whatsapp)
+                @if ($isReserved)
+                    <div class="mt-7">
+                        <p class="rounded-2xl bg-paper-deep px-4 py-3 text-[15px] text-ink-soft">Bu parça şu an başka birinin sepetinde. Ödeme tamamlanmazsa kısa süre içinde yeniden satışa açılır.</p>
+                        <button type="button" class="btn-outline mt-4 w-full cursor-not-allowed opacity-50" disabled>sepete ekle</button>
+                    </div>
+                @elseif ($isSold)
+                    <div class="mt-7 rounded-2xl bg-paper-deep px-5 py-4">
+                        <p class="text-[15px] text-ink-soft">Bu parça yeni evine gitti. Her parçamız tek; benzerini sizin için yapabiliriz.</p>
+                        @if ($similar = $product->similarRequestUrl())
+                            <a href="{{ $similar }}" rel="noopener" class="btn-primary mt-3 inline-flex">benzerini iste</a>
+                        @endif
+                    </div>
+                @endif
+
+                @if ($whatsapp && ! $isSold)
                     <a href="https://wa.me/{{ $whatsapp }}?text={{ $waText }}" rel="noopener" class="mt-4 inline-flex items-center gap-2 text-[15px] text-ink-soft underline-offset-4 hover:text-ink hover:underline">
                         <x-glyph name="whatsapp" class="size-4" /> Sorunuz mu var? WhatsApp’tan yazın
                     </a>

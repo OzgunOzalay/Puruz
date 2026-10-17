@@ -21,7 +21,7 @@
             @if ($search)<input type="hidden" name="q" value="{{ $search }}">@endif
             <label class="inline-flex items-center gap-2 text-ink-soft">
                 <input type="checkbox" name="stokta" value="1" @checked(request()->boolean('stokta')) class="size-4 rounded border-line text-ink focus:ring-ink">
-                sadece stoktakiler
+                sadece satıştakiler
             </label>
             <label class="inline-flex items-center gap-2 text-ink-soft">
                 sırala

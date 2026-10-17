@@ -17,10 +17,10 @@ class ShopController extends Controller
     public function home(): View
     {
         $featured = Product::query()->listed()->where('is_featured', true)
-            ->where('type', ProductType::Physical)->with('variants')->ordered()->limit(8)->get();
+            ->goods()->with('variants')->ordered()->limit(8)->get();
 
-        $latest = Product::query()->listed()->where('type', ProductType::Physical)
-            ->with('variants')->latest('published_at')->latest('id')->limit(8)->get();
+        $latest = Product::query()->listed()->goods()
+            ->with('variants')->availableFirst()->latest('published_at')->latest('id')->limit(8)->get();
 
         $workshops = Product::query()->listed()->where('type', ProductType::Workshop)
             ->with('upcomingSessions')->ordered()->limit(3)->get();
@@ -59,6 +59,8 @@ class ShopController extends Controller
             $query->where(fn (Builder $q) => $q->where('track_stock', false)->orWhere('made_to_order', true)->orWhere('stock', '>', 0)
                 ->orWhereHas('variants', fn (Builder $v) => $v->where('is_active', true)->where('stock', '>', 0)));
         }
+
+        $query->availableFirst();
 
         match ($request->query('sirala')) {
             'fiyat-artan' => $query->orderBy('price'),
