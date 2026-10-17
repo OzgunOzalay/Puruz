@@ -7,6 +7,7 @@ use App\Enums\ProductType;
 use App\Enums\ProductVisibility;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\SimilarRequest;
 use App\Support\ProductImages;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
@@ -123,6 +124,14 @@ class DemoSeeder extends Seeder
                     'capacity' => 8,
                 ]);
             }
+        }
+
+        $kum = Product::query()->where('slug', 'kum-kupa')->first();
+        $kase = Product::query()->where('slug', 'kiremit-kase')->first();
+        if ($kum && $kase) {
+            // forceCreate so the backdated created_at is kept.
+            SimilarRequest::query()->forceCreate(['product_id' => $kum->id, 'message' => "Merhaba, bu kupadan 4 tane istiyorum, düğün hediyesi olacak.\nAralık ortasına yetişir mi?", 'contact' => '+905321112233', 'contact_type' => 'phone', 'created_at' => now()->subDay()]);
+            SimilarRequest::query()->forceCreate(['product_id' => $kase->id, 'message' => 'Biraz daha büyük olabilir mi? Salata kasesi olarak kullanacağım.', 'contact' => 'mehmet@example.com', 'contact_type' => 'email', 'status' => 'contacted', 'admin_note' => 'Ölçüyü sordum, 22 cm istiyor.', 'created_at' => now()->subDays(3)]);
         }
     }
 
