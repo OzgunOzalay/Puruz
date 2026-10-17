@@ -4,11 +4,13 @@ namespace Tests\Feature;
 
 use App\Enums\ProductStatus;
 use App\Enums\ProductType;
+use App\Enums\ProductVisibility;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
 use App\Filament\Resources\Products\ProductsSummary;
 use App\Filament\Resources\Products\ProductStatusText;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -165,5 +167,40 @@ class AdminProductsTest extends TestCase
         Livewire::test(EditProduct::class, ['record' => $physical->slug])
             ->assertFormFieldVisible('stock')
             ->assertSee('Seri üretim');
+    }
+
+    public function test_new_piece_defaults_to_live_in_the_shop(): void
+    {
+        Livewire::test(CreateProduct::class)
+            ->assertSchemaStateSet(['status' => ProductStatus::Published, 'visibility' => ProductVisibility::Public, 'type' => 'unique']);
+    }
+
+    public function test_create_another_keeps_type_and_categories(): void
+    {
+        $category = Category::query()->create(['name' => 'Kupalar', 'slug' => 'kupalar']);
+
+        Livewire::test(CreateProduct::class)
+            ->fillForm(['type' => 'unique', 'name' => 'Kupa Bir', 'slug' => 'kupa-bir', 'price' => '500', 'categories' => [$category->id]])
+            ->call('createAnother')
+            ->assertHasNoFormErrors()
+            ->assertSchemaStateSet(['type' => 'unique', 'categories' => [$category->id], 'name' => null]);
+
+        $this->assertTrue(Product::query()->where('slug', 'kupa-bir')->exists());
+    }
+
+    public function test_category_can_be_created_inline(): void
+    {
+        Livewire::test(CreateProduct::class)
+            ->assertFormComponentActionExists('categories', 'createOption');
+    }
+
+    public function test_edit_page_shows_shop_preview_card_and_link(): void
+    {
+        $draft = Product::factory()->unique()->create(['status' => ProductStatus::Draft, 'name' => 'Taslak Kase', 'price' => 45000]);
+
+        $this->get('/yonetim/urunler/'.$draft->slug.'/edit')->assertOk()
+            ->assertSee('Mağazada nasıl görünecek?')
+            ->assertSee('/onizleme/urun/'.$draft->slug, false)
+            ->assertSee('450 ₺');
     }
 }

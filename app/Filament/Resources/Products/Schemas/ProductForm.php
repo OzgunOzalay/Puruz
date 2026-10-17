@@ -6,6 +6,7 @@ use App\Enums\ProductStatus;
 use App\Enums\ProductType;
 use App\Enums\ProductVisibility;
 use App\Filament\Support\MoneyInput;
+use App\Models\Category;
 use App\Models\Product;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -49,7 +50,8 @@ class ProductForm
                     Section::make('Fotoğraflar')->schema([
                         FileUpload::make('images')
                             ->hiddenLabel()
-                            ->helperText('Sürükleyerek sıralayın; ilk fotoğraf kapak olur. Instagram için 4:5 dikey fotoğraflar idealdir.')
+                            ->helperText('4:5 dikey fotoğraflar en iyi sonucu verir. Sürükleyerek sıralayın; ilk fotoğraf kapak olur.')
+                            ->extraAttributes(['class' => 'min-h-64'])
                             ->image()
                             ->multiple()
                             ->reorderable()
@@ -66,6 +68,7 @@ class ProductForm
                     Section::make('Ad & açıklama')->schema([
                         TextInput::make('name')
                             ->label('Ad')
+                            ->autofocus(fn (string $operation) => $operation === 'create')
                             ->required()
                             ->maxLength(190)
                             ->live(onBlur: true)
@@ -146,14 +149,16 @@ class ProductForm
                             ->helperText('Doluysa “indirimde” görünür ve bu fiyat üstü çizili gösterilir.'),
                     ]),
                     Section::make('Yayın')->schema([
-                        Select::make('status')->label('Durum')->options(ProductStatus::class)->default(ProductStatus::Draft)->required()->native(false),
+                        Select::make('status')->label('Durum')->options(ProductStatus::class)->default(ProductStatus::Published)->required()->native(false),
                         Radio::make('visibility')->label('Görünürlük')->options(ProductVisibility::class)->default(ProductVisibility::Public)->required(),
                         DateTimePicker::make('published_at')->label('Yayın tarihi')
                             ->helperText('İleri bir tarih seçerseniz o zaman görünür olur.')->native(false)->seconds(false),
                         Toggle::make('is_featured')->label('Öne çıkar (ana sayfa & link sayfası)'),
                     ]),
                     Section::make('Kategoriler')->schema([
-                        Select::make('categories')->hiddenLabel()->relationship('categories', 'name')->multiple()->preload()->searchable(),
+                        Select::make('categories')->hiddenLabel()->relationship('categories', 'name')->multiple()->preload()->searchable()
+                            ->createOptionForm([TextInput::make('name')->label('Kategori adı')->required()->maxLength(120)])
+                            ->createOptionUsing(fn (array $data) => Category::query()->create(['name' => $data['name'], 'slug' => Str::slug($data['name']).'-'.Str::lower(Str::random(3))])->getKey()),
                     ]),
                     Section::make('Parça kodu')->hidden(fn (Get $get) => self::isWorkshop($get))->schema([
                         TextInput::make('sku')->hiddenLabel()->placeholder('Boş bırakırsanız otomatik verilir')

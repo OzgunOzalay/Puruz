@@ -54,11 +54,6 @@ class EditProduct extends EditRecord
                 ->modalContent(fn (Product $record) => view('filament.product-share', ['product' => $record]))
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Kapat'),
-            Action::make('view')
-                ->label(fn (Product $record) => $record->isReachable() ? 'Sitede gör' : 'Önizle')
-                ->icon('heroicon-o-arrow-top-right-on-square')
-                ->color('gray')
-                ->url(fn (Product $record) => $record->isReachable() ? $record->url() : $record->previewUrl(), shouldOpenInNewTab: true),
             DeleteAction::make(),
             ForceDeleteAction::make(),
             RestoreAction::make(),
