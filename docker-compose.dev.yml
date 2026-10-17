@@ -6,6 +6,9 @@ services:
     environment:
       SERVER_NAME: ":80"
       APP_URL: http://localhost
+      # Plain HTTP locally, so cookies must not be marked secure.
+      SESSION_SECURE_COOKIE: "false"
+      MAIL_MAILER: smtp
       MAIL_HOST: mailpit
       MAIL_PORT: 1025
     ports: !override
@@ -13,6 +16,7 @@ services:
 
   worker:
     environment:
+      MAIL_MAILER: smtp
       MAIL_HOST: mailpit
       MAIL_PORT: 1025
 

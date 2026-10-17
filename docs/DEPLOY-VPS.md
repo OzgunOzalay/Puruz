@@ -113,4 +113,11 @@ cp .env.example .env   # APP_KEY, DB_PASSWORD, DB_ROOT_PASSWORD doldurun; PAYMEN
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
-Mağaza http://localhost, e-postalar http://localhost:8025.
+İlk açılışta yönetici hesabını ve örnek ürünleri ekleyin:
+
+```bash
+docker compose exec app php artisan db:seed --force
+docker compose exec app php artisan db:seed --class=DemoSeeder --force
+```
+
+Mağaza http://localhost, panel http://localhost/yonetim, e-postalar http://localhost:8025.
