@@ -47,6 +47,16 @@ class AdminProductsTest extends TestCase
         $this->assertSame(['gray', 'Yayına girecek · 5 Ara'], ProductStatusText::for($future)); // review focus 4
     }
 
+    public function test_sold_piece_still_reads_sold_when_hidden_as_draft_or_rescheduled(): void
+    {
+        $draft = Product::factory()->unique()->create(['status' => ProductStatus::Draft, 'published_at' => CarbonImmutable::parse('2026-10-16'), 'sold_at' => CarbonImmutable::parse('2026-11-03 10:00')]);
+        $future = Product::factory()->unique()->create(['published_at' => CarbonImmutable::parse('2026-12-05'), 'sold_at' => CarbonImmutable::parse('2026-11-03 10:00')]);
+
+        $this->assertSame('gray', ProductStatusText::for($draft->fresh())[0]);
+        $this->assertStringStartsWith('Satıldı · 3 Kas', ProductStatusText::for($draft->fresh())[1]);
+        $this->assertStringStartsWith('Satıldı · 3 Kas', ProductStatusText::for($future->fresh())[1]);
+    }
+
     public function test_workshop_phrase_summarises_upcoming_sessions(): void
     {
         $workshop = Product::factory()->workshop()->create();

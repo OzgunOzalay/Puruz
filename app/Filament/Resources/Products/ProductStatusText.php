@@ -16,6 +16,11 @@ final class ProductStatusText
     /** @return array{0: string, 1: string} colour and phrase */
     public static function for(Product $product): array
     {
+        // A sale is the most important fact about a piece, even when it was hidden afterwards.
+        if ($product->pieceState() === PieceState::Sold) {
+            return ['gray', 'Satıldı · '.Human::day($product->sold_at).', '.Human::took($product->published_at ?? $product->created_at, $product->sold_at)];
+        }
+
         if ($product->status === ProductStatus::Draft) {
             return ['gray', 'Taslak'];
         }
@@ -35,7 +40,6 @@ final class ProductStatusText
         $listedAt = $product->published_at ?? $product->created_at;
 
         return match ($product->pieceState()) {
-            PieceState::Sold => ['gray', 'Satıldı · '.Human::day($product->sold_at).', '.Human::took($listedAt, $product->sold_at)],
             PieceState::Reserved => ['warning', 'Ödeme bekleniyor'],
             PieceState::Available => ['success', 'Satışta · '.Human::since($listedAt)],
             null => self::stock($product),
