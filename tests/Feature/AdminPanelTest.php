@@ -201,7 +201,7 @@ class AdminPanelTest extends TestCase
         Livewire::test(SalesOverview::class)
             ->assertSee('Satışta')
             ->assertSee('3 parça')
-            ->assertSee('bu ay 1 parça satıldı')
+            ->assertSee('bu ay 1 satıldı')
             ->assertDontSee('Az stok');
     }
 }
