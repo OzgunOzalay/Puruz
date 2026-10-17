@@ -13,7 +13,7 @@ class MoneyInput
         return TextInput::make($name)
             ->suffix('₺')
             ->inputMode('decimal')
-            ->rule('regex:/^\d{1,7}([.,]\d{1,2})?$/')
+            ->rule('regex:/^(\d{1,3}(\.\d{3})+|\d{1,7})([.,]\d{1,2})?$/')
             ->formatStateUsing(fn ($state) => $state === null ? null : rtrim(rtrim(number_format($state / 100, 2, ',', ''), '0'), ','))
             ->dehydrateStateUsing(fn ($state) => Money::parse($state));
     }

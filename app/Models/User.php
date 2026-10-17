@@ -19,6 +19,8 @@ class User extends Authenticatable implements FilamentUser
 
     protected $hidden = ['password', 'remember_token'];
 
+    protected $attributes = ['role' => 'staff', 'is_active' => true];
+
     protected function casts(): array
     {
         return [
@@ -31,7 +33,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_active;
+        return (bool) $this->is_active;
     }
 
     public function isAdmin(): bool

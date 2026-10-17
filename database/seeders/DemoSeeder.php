@@ -13,6 +13,7 @@ use App\Support\ProductImages;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class DemoSeeder extends Seeder
 {
@@ -47,7 +48,7 @@ class DemoSeeder extends Seeder
             $product = Product::query()->create([
                 'type' => ProductType::Physical,
                 'name' => $name,
-                'slug' => \Illuminate\Support\Str::slug($name),
+                'slug' => Str::slug($name),
                 'sku' => 'PRZ-'.str_pad((string) ($i + 1), 3, '0', STR_PAD_LEFT),
                 'short_description' => $short,
                 'description' => '<p>'.$short.' Atölyemizde çarkta şekillendirilip iki kez fırınlandı. Elde yapıldığı için renk ve ölçülerde küçük farklılıklar olabilir.</p>',

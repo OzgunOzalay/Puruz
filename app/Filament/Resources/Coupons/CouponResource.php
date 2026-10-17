@@ -53,7 +53,7 @@ class CouponResource extends Resource
                 ->label(fn (Get $get) => $isPercent($get) ? 'İndirim yüzdesi' : 'İndirim tutarı')
                 ->suffix(fn (Get $get) => $isPercent($get) ? '%' : '₺')
                 ->required()
-                ->rule('regex:/^\\d{1,7}([.,]\\d{1,2})?$/')
+                ->rule('regex:/^(\d{1,3}(\.\d{3})+|\d{1,7})([.,]\d{1,2})?$/')
                 ->formatStateUsing(fn ($state, Get $get) => $state === null ? null : ($isPercent($get) ? $state : rtrim(rtrim(number_format($state / 100, 2, ',', ''), '0'), ',')))
                 ->dehydrateStateUsing(fn ($state, Get $get) => $isPercent($get) ? min(100, (int) $state) : Money::parse($state)),
             MoneyInput::make('min_total')->label('En düşük sepet tutarı'),

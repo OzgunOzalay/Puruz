@@ -36,7 +36,11 @@ class Money
 
         $value = str_replace([' ', '₺', 'TL'], '', $value);
         if (str_contains($value, ',')) {
+            // Turkish style: 1.250,50
             $value = str_replace(['.', ','], ['', '.'], $value);
+        } elseif (preg_match('/^\d{1,3}(\.\d{3})+$/', $value)) {
+            // Thousands separators only: 2.000 means two thousand, not two.
+            $value = str_replace('.', '', $value);
         }
 
         return (int) round(((float) $value) * 100);

@@ -177,7 +177,13 @@ class CartService
         return $this->lines()->isEmpty();
     }
 
+    /** True when a line sold out or had its quantity reduced since it was added. */
     public function hasProblems(): bool
+    {
+        return $this->lines()->contains(fn (CartLine $line) => $line->problem !== null);
+    }
+
+    public function hasSoldOutLines(): bool
     {
         return $this->lines()->contains(fn (CartLine $line) => $line->problem === 'Tükendi');
     }

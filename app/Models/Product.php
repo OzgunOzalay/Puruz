@@ -178,7 +178,7 @@ class Product extends Model
     /** Temporary link that lets the admin preview a draft or hidden product. */
     public function previewUrl(): string
     {
-        return URL::temporarySignedRoute('shop.product.preview', now()->addDays(3), ['product' => $this->id]);
+        return URL::temporarySignedRoute('shop.product.preview', now()->addDays(3), ['product' => $this->slug]);
     }
 
     public function getRouteKeyName(): string

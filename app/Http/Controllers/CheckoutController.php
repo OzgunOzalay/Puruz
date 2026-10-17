@@ -34,7 +34,7 @@ class CheckoutController extends Controller
     public function store(CheckoutRequest $request, CheckoutService $checkout, PaymentService $payments): RedirectResponse
     {
         if ($this->cart->hasProblems()) {
-            return redirect()->route('cart.show')->with('error', 'Sepetinizde tükenen ürünler var, lütfen kontrol edin.');
+            return redirect()->route('cart.show')->with('error', 'Sepetinizdeki bazı ürünlerin stoğu değişti, lütfen kontrol edin.');
         }
 
         try {

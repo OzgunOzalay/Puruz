@@ -74,7 +74,7 @@
                             <p class="mt-4 rounded-xl bg-paper-deep px-3 py-2 text-sm text-ink-soft">Ücretsiz kargo için {{ Money::format($gap) }} daha ekleyin.</p>
                         @endif
 
-                        <a href="{{ route('checkout.show') }}" @class(['btn-primary mt-5 w-full', 'pointer-events-none opacity-50' => $cart->hasProblems()])>ödemeye geç <x-glyph name="arrow-right" class="size-4" /></a>
+                        <a href="{{ route('checkout.show') }}" @class(['btn-primary mt-5 w-full', 'pointer-events-none opacity-50' => $cart->hasSoldOutLines()])>ödemeye geç <x-glyph name="arrow-right" class="size-4" /></a>
                     </div>
                     <p class="flex items-center justify-center gap-2 text-sm text-ink-soft"><x-glyph name="lock" class="size-4" /> Ödemeler iyzico güvencesiyle, 3D Secure ile alınır.</p>
                 </aside>
