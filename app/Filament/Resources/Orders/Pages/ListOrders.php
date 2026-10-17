@@ -4,14 +4,21 @@ namespace App\Filament\Resources\Orders\Pages;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
+use App\Filament\Resources\Orders\OrdersSummary;
 use App\Models\Order;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListOrders extends ListRecords
 {
     protected static string $resource = OrderResource::class;
+
+    public function getSubheading(): string|Htmlable|null
+    {
+        return OrdersSummary::html();
+    }
 
     public function getTabs(): array
     {

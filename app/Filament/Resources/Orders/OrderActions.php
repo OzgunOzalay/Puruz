@@ -84,6 +84,19 @@ class OrderActions
             });
     }
 
+    public static function markDelivered(): Action
+    {
+        return Action::make('markDelivered')
+            ->label('Teslim edildi')
+            ->icon('heroicon-o-check-circle')
+            ->visible(fn (Order $record) => $record->status === OrderStatus::Shipped)
+            ->requiresConfirmation()
+            ->action(function (Order $record) {
+                app(OrderStatusService::class)->transition($record, OrderStatus::Delivered, null, true, auth()->user());
+                Notification::make()->success()->title('Teslim edildi olarak işaretlendi')->send();
+            });
+    }
+
     public static function refund(): Action
     {
         return Action::make('refund')

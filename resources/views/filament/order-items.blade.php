@@ -14,12 +14,25 @@
             @foreach ($order->items as $item)
                 <tr class="border-b border-gray-100 align-top dark:border-white/5">
                     <td class="py-2.5 pr-3">
-                        <p class="font-medium">{{ $item->name }}</p>
-                        @if ($item->variant_name)<p class="text-gray-500">{{ $item->variant_name }}</p>@endif
-                        @if ($item->session_label)<p class="text-gray-500">{{ $item->session_label }}</p>@endif
-                        @if ($item->participants)<p class="text-gray-500">Katılımcılar: {{ implode(', ', $item->participants) }}</p>@endif
-                        @if ($item->sku)<p class="text-xs text-gray-400">{{ $item->sku }}</p>@endif
-                        @if ($item->refunded_total)<p class="text-xs text-danger-600">İade: {{ Money::format($item->refunded_total) }}</p>@endif
+                        <div class="flex gap-3">
+                            @if ($cover = $item->product?->coverImage())
+                                <img src="{{ \App\Support\ProductImages::url($cover, 200) }}" alt="" class="size-10 shrink-0 rounded object-cover">
+                            @endif
+                            <div>
+                                <p class="font-medium">
+                                    @if ($item->product)
+                                        <a href="{{ \App\Filament\Resources\Products\ProductResource::getUrl('edit', ['record' => $item->product]) }}" class="hover:underline">{{ $item->name }}</a>
+                                    @else
+                                        {{ $item->name }}
+                                    @endif
+                                </p>
+                                @if ($item->variant_name)<p class="text-gray-500">{{ $item->variant_name }}</p>@endif
+                                @if ($item->session_label)<p class="text-gray-500">{{ $item->session_label }}</p>@endif
+                                @if ($item->participants)<p class="text-gray-500">Katılımcılar: {{ implode(', ', $item->participants) }}</p>@endif
+                                @if ($item->sku)<p class="text-xs text-gray-400">{{ $item->sku }}</p>@endif
+                                @if ($item->refunded_total)<p class="text-xs text-danger-600">İade: {{ Money::format($item->refunded_total) }}</p>@endif
+                            </div>
+                        </div>
                     </td>
                     <td class="py-2.5 pr-3 text-right">{{ $item->quantity }}</td>
                     <td class="py-2.5 pr-3 text-right">{{ Money::format($item->unit_price) }}</td>

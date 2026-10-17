@@ -22,6 +22,7 @@ class ViewOrder extends ViewRecord
     {
         return [
             OrderActions::ship(),
+            OrderActions::markDelivered(),
             OrderActions::changeStatus(),
             ActionGroup::make([
                 OrderActions::note(),

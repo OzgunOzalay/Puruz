@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Orders\Schemas;
 
+use App\Filament\Resources\Orders\OrderStatusText;
 use App\Models\Order;
+use App\Support\Human;
 use App\Support\Money;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
@@ -19,6 +21,7 @@ class OrderInfolist
         return $schema
             ->columns(3)
             ->components([
+                ViewEntry::make('next_step')->hiddenLabel()->view('filament.order-next-step')->columnSpanFull(),
                 Grid::make(1)->columnSpan(2)->schema([
                     Section::make('Ürünler')->schema([
                         ViewEntry::make('items')->hiddenLabel()->view('filament.order-items'),
@@ -40,11 +43,18 @@ class OrderInfolist
 
                 Grid::make(1)->columnSpan(1)->schema([
                     Section::make('Özet')->schema([
-                        TextEntry::make('status')->label('Durum')->badge(),
-                        TextEntry::make('created_at')->label('Tarih')->dateTime('d.m.Y H:i'),
+                        TextEntry::make('status')->label('Durum')->formatStateUsing(fn (Order $record) => OrderStatusText::html($record))->html(),
+                        TextEntry::make('payment_sentence')->label('Ödeme')
+                            ->state(fn (Order $record) => $record->paid_at
+                                ? collect(['Kart ile ödendi', Human::date($record->paid_at), $record->installment > 1 ? $record->installment.' taksit' : null])->filter()->implode(' · ')
+                                : 'Henüz ödenmedi'),
                         TextEntry::make('total')->label('Toplam')->formatStateUsing($money)->weight('bold')->size('lg'),
                         TextEntry::make('source')->label('Kaynak')
-                            ->state(fn (Order $record) => collect([$record->utm_source, $record->utm_medium, $record->utm_campaign])->filter()->implode(' / ') ?: 'doğrudan'),
+                            ->state(fn (Order $record) => match (true) {
+                                ! $record->utm_source => 'Doğrudan geldi',
+                                $record->utm_source === 'instagram' => 'Instagram '.($record->utm_medium ?: '').'’dan geldi',
+                                default => ucfirst($record->utm_source).'’dan geldi',
+                            }),
                         TextEntry::make('cargo')->label('Kargo')
                             ->state(fn (Order $record) => $record->cargo_tracking_number ? $record->cargo_company?->getLabel().' · '.$record->cargo_tracking_number : null)
                             ->url(fn (Order $record) => $record->cargoTrackingUrl(), shouldOpenInNewTab: true)
