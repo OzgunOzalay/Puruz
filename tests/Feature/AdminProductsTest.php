@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\ProductStatus;
+use App\Enums\ProductType;
 use App\Enums\UserRole;
+use App\Filament\Resources\Products\Pages\CreateProduct;
+use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
 use App\Filament\Resources\Products\ProductsSummary;
 use App\Filament\Resources\Products\ProductStatusText;
@@ -109,5 +112,48 @@ class AdminProductsTest extends TestCase
         $this->assertSame([], $copy->images ?? []);
         $this->assertSame('Stoneware', $copy->materials);
         $this->assertNotSame($sold->sku, $copy->sku);
+    }
+
+    public function test_creating_a_piece_offers_only_unique_and_workshop(): void
+    {
+        $this->get('/yonetim/urunler/create')->assertOk()->assertSee('Tek parça')->assertDontSee('Seri üretim');
+
+        Livewire::test(CreateProduct::class)
+            ->fillForm([
+                'type' => 'unique',
+                'name' => 'Benekli Kupa',
+                'slug' => 'benekli-kupa',
+                'price' => '649,90',
+                'status' => 'published',
+                'visibility' => 'public',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $piece = Product::query()->where('slug', 'benekli-kupa')->firstOrFail();
+        $this->assertSame(ProductType::Unique, $piece->type);
+        $this->assertSame(64990, $piece->price);
+        $this->assertSame(1, $piece->stock);
+        $this->assertSame('PRZ-0001', $piece->sku);
+    }
+
+    public function test_sold_piece_edit_page_shows_its_sale(): void
+    {
+        $sold = Product::factory()->unique()->create(['published_at' => now()->subDays(20), 'sold_at' => now()->subDays(2)]);
+
+        $this->get('/yonetim/urunler/'.$sold->slug.'/edit')->assertOk()
+            ->assertSee('Satıldı')
+            ->assertSee('mevcut siparişi etkilemez')
+            ->assertDontSee('Stok adedi');
+    }
+
+    // Review focus 3
+    public function test_existing_mass_produced_product_keeps_its_stock_field(): void
+    {
+        $physical = Product::factory()->create(['stock' => 4]);
+
+        Livewire::test(EditProduct::class, ['record' => $physical->slug])
+            ->assertFormFieldVisible('stock')
+            ->assertSee('Seri üretim');
     }
 }

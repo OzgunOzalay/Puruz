@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
+use App\Enums\ProductType;
 use App\Filament\Support\MoneyInput;
 use App\Models\Product;
 use App\Support\Money;
@@ -31,7 +32,7 @@ class VariantsRelationManager extends RelationManager
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
         /** @var Product $ownerRecord */
-        return ! $ownerRecord->isWorkshop();
+        return $ownerRecord->type === ProductType::Physical;
     }
 
     public function form(Schema $schema): Schema

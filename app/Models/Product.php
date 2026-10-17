@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use App\Enums\PieceState;
 use App\Enums\ProductStatus;
 use App\Enums\ProductType;
@@ -121,6 +122,24 @@ class Product extends Model
             $this->stock <= 0 => PieceState::Reserved,
             default => PieceState::Available,
         };
+    }
+
+    /** The unpaid order holding a reserved piece, or the paid order a sold piece went to. */
+    public function pieceOrder(): ?Order
+    {
+        $state = $this->pieceState();
+        if ($state === null || $state === PieceState::Available) {
+            return null;
+        }
+
+        return Order::query()
+            ->whereHas('items', fn (Builder $q) => $q->where('product_id', $this->id))
+            ->when($state === PieceState::Sold,
+                fn (Builder $q) => $q->paid(),
+                fn (Builder $q) => $q->where('status', OrderStatus::PendingPayment)->where('reservation_released', false))
+            ->with('items')
+            ->latest('id')
+            ->first();
     }
 
     /** Next free automatic piece code: PRZ-0001, PRZ-0002, … */

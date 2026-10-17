@@ -88,12 +88,10 @@ class AdminPanelTest extends TestCase
 
         Livewire::test(CreateProduct::class)
             ->fillForm([
-                'type' => 'physical',
+                'type' => 'unique',
                 'name' => 'Benekli Kupa',
                 'slug' => 'benekli-kupa',
                 'price' => '649,90',
-                'stock' => 3,
-                'track_stock' => true,
                 'status' => 'published',
                 'visibility' => 'unlisted',
             ])

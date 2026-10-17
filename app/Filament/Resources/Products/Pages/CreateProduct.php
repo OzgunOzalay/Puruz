@@ -11,7 +11,7 @@ class CreateProduct extends CreateRecord
 
     protected function getRedirectUrl(): string
     {
-        // Stay on the edit page so variants or workshop dates can be added right away.
+        // Stay on the edit page so photos, workshop dates or variants can be adjusted right away.
         return $this->getResource()::getUrl('edit', ['record' => $this->getRecord()]);
     }
 }
