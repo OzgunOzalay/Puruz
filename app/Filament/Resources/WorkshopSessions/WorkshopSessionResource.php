@@ -36,7 +36,6 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -102,17 +101,13 @@ class WorkshopSessionResource extends Resource
                 TextColumn::make('label')->label('Grup')->description(fn (WorkshopSession $record) => $record->schedule_note)->placeholder('—'),
                 TextColumn::make('seats_reserved')
                     ->label('Doluluk')
-                    ->formatStateUsing(fn (WorkshopSession $record) => $record->seats_reserved.' / '.$record->capacity)
-                    ->badge()
-                    ->color(fn (WorkshopSession $record) => match (true) {
-                        $record->seatsLeft() === 0 => 'danger',
-                        $record->seatsLeft() <= 2 => 'warning',
-                        default => 'success',
-                    }),
+                    ->formatStateUsing(fn (WorkshopSession $record) => $record->seats_reserved.'/'.$record->capacity.' dolu · '.$record->seatsLeft().' yer kaldı')
+                    ->color(fn (WorkshopSession $record) => $record->seatsLeft() === 0 ? 'danger' : 'gray'),
                 TextColumn::make('price')->label('Fiyat')
                     ->state(fn (WorkshopSession $record) => $record->effectivePrice())
                     ->formatStateUsing(fn (int $state) => Money::format($state)),
-                ToggleColumn::make('is_visible')->label('Görünür'),
+                TextColumn::make('is_visible')->label('Nerede')->color('gray')
+                    ->formatStateUsing(fn (WorkshopSession $record) => $record->is_visible ? 'Sitede' : 'Gizli'),
             ])
             ->filters([
                 TernaryFilter::make('upcoming')
@@ -133,6 +128,10 @@ class WorkshopSessionResource extends Resource
             ])
             ->recordActions([
                 ActionGroup::make([
+                    Action::make('toggleVisible')
+                        ->label(fn (WorkshopSession $record) => $record->is_visible ? 'Sitede gizle' : 'Sitede göster')
+                        ->icon('heroicon-o-eye')
+                        ->action(fn (WorkshopSession $record) => $record->update(['is_visible' => ! $record->is_visible])),
                     Action::make('attendees')
                         ->label('Katılımcılar')
                         ->icon('heroicon-o-users')

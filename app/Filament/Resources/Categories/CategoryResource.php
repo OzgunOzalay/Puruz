@@ -5,7 +5,10 @@ namespace App\Filament\Resources\Categories;
 use App\Filament\Resources\Categories\Pages\ManageCategories;
 use App\Filament\Support\NavigationGroup;
 use App\Models\Category;
+use App\Support\Human;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
@@ -20,8 +23,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use UnitEnum;
 
@@ -63,15 +66,24 @@ class CategoryResource extends Resource
         return $table
             ->reorderable('sort_order')
             ->defaultSort('sort_order')
+            ->modifyQueryUsing(fn (Builder $query) => $query->withCount(['products', 'products as for_sale_count' => fn (Builder $products) => $products->forSale()->where('stock', '>', 0)]))
             ->columns([
                 ImageColumn::make('image')->label('')->disk('public')->circular()->imageSize(40),
                 TextColumn::make('name')->label('Ad')->searchable()->description(fn (Category $record) => $record->parent?->name),
-                TextColumn::make('products_count')->label('Ürün')->counts('products'),
-                ToggleColumn::make('is_visible')->label('Görünür'),
+                TextColumn::make('products_count')->label('Parçalar')
+                    ->formatStateUsing(fn (Category $record) => $record->products_count.' parça, '.Human::ofThem($record->for_sale_count).' satışta'),
+                TextColumn::make('is_visible')->label('Nerede')->color('gray')
+                    ->formatStateUsing(fn (Category $record) => $record->is_visible ? 'Mağazada' : 'Gizli'),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    Action::make('toggleVisible')
+                        ->label(fn (Category $record) => $record->is_visible ? 'Gizle' : 'Mağazada göster')
+                        ->icon('heroicon-o-eye')
+                        ->action(fn (Category $record) => $record->update(['is_visible' => ! $record->is_visible])),
+                    DeleteAction::make(),
+                ]),
             ]);
     }
 

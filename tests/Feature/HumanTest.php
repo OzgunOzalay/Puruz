@@ -34,6 +34,18 @@ class HumanTest extends TestCase
         $this->assertSame('dün 09:05', Human::date(now()->subDay()->setTime(9, 5)));
     }
 
+    public function test_turkish_suffix_after_numbers(): void
+    {
+        $this->assertSame('1’i', Human::ofThem(1));
+        $this->assertSame('2’si', Human::ofThem(2));
+        $this->assertSame('3’ü', Human::ofThem(3));
+        $this->assertSame('6’sı', Human::ofThem(6));
+        $this->assertSame('9’u', Human::ofThem(9));
+        $this->assertSame('10’u', Human::ofThem(10));
+        $this->assertSame('20’si', Human::ofThem(20));
+        $this->assertSame('40’ı', Human::ofThem(40));
+    }
+
     public function test_page_summary_joins_parts_and_skips_empty_ones(): void
     {
         $html = (string) PageSummary::make([['14 parça satışta', '(8.450 ₺ değerinde)'], [null, 'yok'], ['2 taslak']]);

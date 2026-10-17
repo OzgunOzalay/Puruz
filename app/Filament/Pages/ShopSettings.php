@@ -4,6 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NavigationGroup;
+use App\Filament\Support\PageSummary;
+use App\Support\Money;
 use App\Support\Settings;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -23,6 +25,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
 use UnitEnum;
 
 /**
@@ -42,6 +45,21 @@ class ShopSettings extends Page
 
     public ?array $data = [];
 
+    public function getSubheading(): string|Htmlable|null
+    {
+        $fee = (int) Settings::get('shipping_fee', 0);
+        $free = (int) Settings::get('free_shipping_threshold');
+        $gateway = config('services.payment_gateway') === 'fake'
+            ? 'test ödeme sayfası'
+            : 'iyzico'.(str_contains((string) config('services.iyzico.base_url'), 'sandbox') ? ' (test modu)' : '');
+
+        return PageSummary::make([
+            [Settings::get('store_closed') ? 'Mağaza kapalı' : 'Mağaza açık'],
+            ['kargo '.Money::format($fee), $free ? Money::format($free).' üzeri ücretsiz' : null],
+            ['ödemeler', $gateway],
+        ]);
+    }
+
     public function mount(): void
     {
         $this->form->fill(Settings::all());
@@ -54,11 +72,11 @@ class ShopSettings extends Page
             ->components([
                 Tabs::make('settings')->persistTabInQueryString()->tabs([
                     Tab::make('Mağaza')->icon('heroicon-o-building-storefront')->schema([
-                        Section::make('Genel')->columns(2)->schema([
+                        Section::make('Genel')->description('Mağaza adı ve iletişim bilgileri; e-postalarda ve sitenin altında görünür.')->columns(2)->schema([
                             TextInput::make('shop_name')->label('Mağaza adı')->required(),
                             TextInput::make('tagline')->label('Slogan'),
                         ]),
-                        Section::make('Şirket bilgileri')
+                        Section::make('Şirket bilgileri')->description('Faturada ve yasal sayfalarda kullanılır.')
                             ->description('Sözleşmelerde, faturada ve site altbilgisinde görünür. iyzico başvurusu için gereklidir.')
                             ->columns(2)
                             ->schema([
@@ -80,24 +98,24 @@ class ShopSettings extends Page
                         ]),
                     ]),
                     Tab::make('Ana sayfa')->icon('heroicon-o-home')->schema([
-                        Section::make('Karşılama alanı')->schema([
+                        Section::make('Karşılama alanı')->description('Ana sayfanın en üstündeki yazı ve görsel.')->schema([
                             TextInput::make('hero_title')->label('Başlık'),
                             Textarea::make('hero_text')->label('Metin')->rows(2),
                             FileUpload::make('hero_image')->label('Görsel')->image()->disk('public')->directory('site')->imageEditor()
                                 ->helperText('Boşsa ilk atölyenin ya da öne çıkan ürünün görseli kullanılır.'),
                         ]),
-                        Section::make('Duyuru şeridi')->columns(2)->schema([
+                        Section::make('Duyuru şeridi')->description('Sitenin en üstünde ince bir duyuru satırı.')->columns(2)->schema([
                             TextInput::make('announcement')->label('Duyuru metni')->placeholder('ör. 1.500 ₺ üzeri kargo bedava!'),
                             TextInput::make('announcement_link')->label('Duyuru linki')->url(),
                         ]),
                     ]),
                     Tab::make('Kargo & ödeme')->icon('heroicon-o-truck')->schema([
-                        Section::make('Kargo')->columns(2)->schema([
+                        Section::make('Kargo')->description('Kargo ücreti ve ücretsiz kargo sınırı; sepette hemen uygulanır.')->columns(2)->schema([
                             MoneyInput::make('shipping_fee')->label('Kargo ücreti')->required(),
                             MoneyInput::make('free_shipping_threshold')->label('Ücretsiz kargo limiti')->helperText('Boşsa her siparişte kargo ücreti alınır.'),
                             Textarea::make('shipping_note')->label('Kargo bilgisi (ürün sayfasında)')->rows(2)->columnSpanFull(),
                         ]),
-                        Section::make('Ödeme')->columns(2)->schema([
+                        Section::make('Ödeme')->description('Taksit seçenekleri ve ödeme süresi.')->columns(2)->schema([
                             Toggle::make('installments_enabled')->label('Taksit seçeneklerini aç')->live()
                                 ->helperText('Taksit komisyonları iyzico sözleşmenize göre belirlenir.'),
                             Select::make('max_installment')->label('En fazla taksit')

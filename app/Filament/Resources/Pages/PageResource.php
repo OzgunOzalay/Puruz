@@ -7,8 +7,10 @@ use App\Filament\Resources\Pages\Pages\EditPage;
 use App\Filament\Resources\Pages\Pages\ListPages;
 use App\Filament\Support\NavigationGroup;
 use App\Models\Page;
+use App\Support\Human;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\RichEditor;
@@ -20,7 +22,6 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 use UnitEnum;
 
@@ -67,14 +68,25 @@ class PageResource extends Resource
             ->defaultSort('sort_order')
             ->columns([
                 TextColumn::make('title')->label('Başlık')->searchable()->description(fn (Page $record) => '/sayfa/'.$record->slug),
-                ToggleColumn::make('is_published')->label('Yayında'),
-                ToggleColumn::make('show_in_footer')->label('Alt menü'),
-                TextColumn::make('updated_at')->label('Güncellendi')->since(),
+                TextColumn::make('is_published')->label('Durum')->color('gray')
+                    ->formatStateUsing(fn (Page $record) => ($record->is_published ? 'Yayında' : 'Taslak').($record->show_in_footer ? ' · alt menüde' : '')),
+                TextColumn::make('updated_at')->label('Güncellendi')
+                    ->formatStateUsing(fn (Page $record) => Human::date($record->updated_at)),
             ])
             ->recordActions([
-                Action::make('open')->label('Aç')->icon('heroicon-o-arrow-top-right-on-square')->url(fn (Page $record) => $record->url(), shouldOpenInNewTab: true),
-                EditAction::make(),
-                DeleteAction::make()->hidden(fn (Page $record) => in_array($record->slug, self::PROTECTED_SLUGS, true)),
+                ActionGroup::make([
+                    Action::make('open')->label('Aç')->icon('heroicon-o-arrow-top-right-on-square')->url(fn (Page $record) => $record->url(), shouldOpenInNewTab: true),
+                    EditAction::make(),
+                    Action::make('togglePublished')
+                        ->label(fn (Page $record) => $record->is_published ? 'Taslağa al' : 'Yayınla')
+                        ->icon('heroicon-o-eye')
+                        ->action(fn (Page $record) => $record->update(['is_published' => ! $record->is_published])),
+                    Action::make('toggleFooter')
+                        ->label(fn (Page $record) => $record->show_in_footer ? 'Alt menüden kaldır' : 'Alt menüye ekle')
+                        ->icon('heroicon-o-bars-3-bottom-left')
+                        ->action(fn (Page $record) => $record->update(['show_in_footer' => ! $record->show_in_footer])),
+                    DeleteAction::make()->hidden(fn (Page $record) => in_array($record->slug, self::PROTECTED_SLUGS, true)),
+                ]),
             ]);
     }
 

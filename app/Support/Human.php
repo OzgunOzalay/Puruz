@@ -48,4 +48,23 @@ class Human
             ? self::day($date).' '.$date->format('H:i')
             : self::day($date);
     }
+
+    /** Turkish possessive suffix after a number: 1'i, 2'si, 3'ü, 6'sı, 10'u … */
+    public static function ofThem(int $n): string
+    {
+        $last = $n % 10;
+        $suffix = match (true) {
+            $n === 0 => 'ı',
+            $last === 0 => match ($n % 100 === 0 ? 100 : $n % 100) {
+                10, 30 => 'u', 20, 50 => 'si', 40, 60, 90 => 'ı', 70, 80 => 'i', default => 'ü'
+            },
+            in_array($last, [1, 5, 8], true) => 'i',
+            in_array($last, [2, 7], true) => 'si',
+            in_array($last, [3, 4], true) => 'ü',
+            $last === 6 => 'sı',
+            default => 'u', // 9
+        };
+
+        return $n.'’'.$suffix;
+    }
 }
