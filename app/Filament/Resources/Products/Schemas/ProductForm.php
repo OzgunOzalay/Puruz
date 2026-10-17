@@ -36,7 +36,8 @@ class ProductForm
                     Section::make()->schema([
                         ToggleButtons::make('type')
                             ->label('Tür')
-                            ->options(fn (string $operation) => collect($operation === 'create' ? ProductType::creatable() : ProductType::cases())
+                            // After creation the type is fixed, so only the record's own type is shown.
+                            ->options(fn (string $operation, ?Product $record) => collect($operation === 'create' || ! $record ? ProductType::creatable() : [$record->type])
                                 ->mapWithKeys(fn (ProductType $type) => [$type->value => $type->getLabel()])->all())
                             ->default(ProductType::Unique->value)
                             ->inline()

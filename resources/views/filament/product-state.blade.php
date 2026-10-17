@@ -1,19 +1,15 @@
 @php
     use App\Enums\PieceState;
-    use App\Support\Human;
     use App\Support\Money;
 
     $order = $product->pieceOrder();
     $item = $order?->items->firstWhere('product_id', $product->id);
-    $listedAt = $product->published_at ?? $product->created_at;
 @endphp
 <div class="space-y-1 text-sm">
     <p class="font-medium">{{ \App\Filament\Resources\Products\ProductStatusText::html($product) }}</p>
     <p class="text-gray-500 dark:text-gray-400">
         @if ($product->pieceState() === PieceState::Sold)
-            {{ $product->sold_at->translatedFormat('j F') }}
-            @if ($item) · {{ Money::format($item->unit_price) }} @endif
-            · {{ Human::took($listedAt, $product->sold_at) }} satıldı
+            @if ($item) {{ Money::format($item->unit_price) }} fiyatla satıldı @endif
         @else
             {{ number_format($product->view_count, 0, ',', '.') }} görüntülenme
         @endif

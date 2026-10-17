@@ -144,7 +144,8 @@ class AdminProductsTest extends TestCase
         $this->get('/yonetim/urunler/'.$sold->slug.'/edit')->assertOk()
             ->assertSee('Satıldı')
             ->assertSee('mevcut siparişi etkilemez')
-            ->assertDontSee('Stok adedi');
+            ->assertDontSee('Stok adedi')
+            ->assertDontSee('Seri üretim');
     }
 
     // Review focus 3
