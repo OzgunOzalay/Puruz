@@ -1,0 +1,102 @@
+<?php
+
+namespace App\Services\Orders;
+
+use App\Models\Coupon;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\WorkshopSession;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Stock, workshop seats and coupon uses are taken when an order is created (pending payment)
+ * and given back if the payment fails, the reservation expires, or the order is refunded with restock.
+ */
+class ReservationService
+{
+    public function release(Order $order): void
+    {
+        DB::transaction(function () use ($order) {
+            $order = Order::query()->lockForUpdate()->with('items')->findOrFail($order->id);
+            if ($order->reservation_released) {
+                return;
+            }
+
+            foreach ($order->items as $item) {
+                $this->restore($item);
+            }
+
+            if ($order->coupon_id) {
+                Coupon::query()->whereKey($order->coupon_id)->where('used_count', '>', 0)->decrement('used_count');
+            }
+
+            $order->forceFill(['reservation_released' => true])->save();
+        });
+    }
+
+    /**
+     * Takes the reservation again for a payment that arrived after the reservation expired.
+     * Returns false if stock or seats are no longer available.
+     */
+    public function reacquire(Order $order): bool
+    {
+        try {
+            DB::transaction(function () use ($order) {
+                $order = Order::query()->lockForUpdate()->with('items')->findOrFail($order->id);
+                if (! $order->reservation_released) {
+                    return;
+                }
+
+                foreach ($order->items as $item) {
+                    if ($item->workshop_session_id) {
+                        $session = WorkshopSession::query()->lockForUpdate()->find($item->workshop_session_id);
+                        if (! $session || $session->seatsLeft() < $item->quantity) {
+                            throw new OutOfStockException;
+                        }
+                        $session->increment('seats_reserved', $item->quantity);
+                    } elseif ($item->stock_reserved) {
+                        $model = $item->product_variant_id
+                            ? ProductVariant::query()->lockForUpdate()->find($item->product_variant_id)
+                            : Product::withTrashed()->lockForUpdate()->find($item->product_id);
+                        if (! $model || $model->stock < $item->quantity) {
+                            throw new OutOfStockException;
+                        }
+                        $model->decrement('stock', $item->quantity);
+                    }
+                }
+
+                if ($order->coupon_id) {
+                    Coupon::query()->whereKey($order->coupon_id)->increment('used_count');
+                }
+
+                $order->forceFill(['reservation_released' => false])->save();
+            });
+        } catch (OutOfStockException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function restore(OrderItem $item): void
+    {
+        if ($item->workshop_session_id) {
+            WorkshopSession::query()->whereKey($item->workshop_session_id)
+                ->update(['seats_reserved' => DB::raw('CASE WHEN seats_reserved >= '.(int) $item->quantity.' THEN seats_reserved - '.(int) $item->quantity.' ELSE 0 END')]);
+
+            return;
+        }
+
+        if (! $item->stock_reserved) {
+            return;
+        }
+
+        if ($item->product_variant_id) {
+            ProductVariant::query()->whereKey($item->product_variant_id)->increment('stock', $item->quantity);
+        } elseif ($item->product_id) {
+            Product::withTrashed()->whereKey($item->product_id)->increment('stock', $item->quantity);
+        }
+    }
+}

@@ -1,0 +1,52 @@
+<?php
+
+return [
+    'accepted' => ':attribute kabul edilmelidir.',
+    'array' => ':attribute bir liste olmalıdır.',
+    'boolean' => ':attribute alanı doğru veya yanlış olmalıdır.',
+    'confirmed' => ':attribute doğrulaması eşleşmiyor.',
+    'date' => ':attribute geçerli bir tarih olmalıdır.',
+    'digits' => ':attribute :digits haneli olmalıdır.',
+    'digits_between' => ':attribute :min ile :max hane arasında olmalıdır.',
+    'email' => ':attribute geçerli bir e-posta adresi olmalıdır.',
+    'exists' => 'Seçilen :attribute geçersiz.',
+    'image' => ':attribute bir görsel olmalıdır.',
+    'in' => 'Seçilen :attribute geçersiz.',
+    'integer' => ':attribute tam sayı olmalıdır.',
+    'max' => [
+        'array' => ':attribute en fazla :max öğe içerebilir.',
+        'file' => ':attribute en fazla :max kilobayt olabilir.',
+        'numeric' => ':attribute en fazla :max olabilir.',
+        'string' => ':attribute en fazla :max karakter olabilir.',
+    ],
+    'min' => [
+        'array' => ':attribute en az :min öğe içermelidir.',
+        'file' => ':attribute en az :min kilobayt olmalıdır.',
+        'numeric' => ':attribute en az :min olmalıdır.',
+        'string' => ':attribute en az :min karakter olmalıdır.',
+    ],
+    'numeric' => ':attribute sayı olmalıdır.',
+    'password' => [
+        'letters' => ':attribute en az bir harf içermelidir.',
+        'mixed' => ':attribute en az bir büyük ve bir küçük harf içermelidir.',
+        'numbers' => ':attribute en az bir rakam içermelidir.',
+        'symbols' => ':attribute en az bir sembol içermelidir.',
+        'uncompromised' => 'Bu :attribute bir veri sızıntısında görülmüş, lütfen farklı bir :attribute seçin.',
+    ],
+    'regex' => ':attribute biçimi geçersiz.',
+    'required' => ':attribute alanı zorunludur.',
+    'required_if' => ':other :value olduğunda :attribute alanı zorunludur.',
+    'same' => ':attribute ile :other eşleşmelidir.',
+    'string' => ':attribute metin olmalıdır.',
+    'unique' => 'Bu :attribute zaten kullanılıyor.',
+    'url' => ':attribute geçerli bir bağlantı olmalıdır.',
+
+    'attributes' => [
+        'name' => 'ad',
+        'email' => 'e-posta',
+        'password' => 'şifre',
+        'code' => 'kupon kodu',
+        'number' => 'sipariş numarası',
+        'quantity' => 'adet',
+    ],
+];

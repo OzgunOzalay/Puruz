@@ -1,0 +1,134 @@
+@import 'tailwindcss';
+
+@import '@fontsource/shantell-sans/latin-500.css';
+@import '@fontsource/shantell-sans/latin-ext-500.css';
+@import '@fontsource/shantell-sans/latin-600.css';
+@import '@fontsource/shantell-sans/latin-ext-600.css';
+@import '@fontsource/dm-sans/latin-400.css';
+@import '@fontsource/dm-sans/latin-ext-400.css';
+@import '@fontsource/dm-sans/latin-500.css';
+@import '@fontsource/dm-sans/latin-ext-500.css';
+@import '@fontsource/dm-sans/latin-600.css';
+@import '@fontsource/dm-sans/latin-ext-600.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+
+@plugin '@tailwindcss/typography';
+
+/*
+ * Pürüz palette, taken from the workshop poster: warm paper, ink-black marker lettering,
+ * and the cobalt / tile-red of the mosaic pieces used sparingly as accents.
+ */
+@theme {
+    --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-hand: 'Shantell Sans', 'DM Sans', ui-sans-serif, sans-serif;
+
+    --color-paper: #f5f4ef;
+    --color-paper-deep: #ebe8df;
+    --color-ink: #141414;
+    --color-ink-soft: #57554f;
+    --color-ink-faint: #8a877e;
+    --color-line: #d9d5ca;
+    --color-cobalt: #2d4ba0;
+    --color-cobalt-soft: #dfe5f4;
+    --color-tile: #d9402b;
+    --color-sand: #c9b79c;
+    --color-moss: #3f6b4f;
+}
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        @apply bg-paper text-ink font-sans antialiased;
+    }
+
+    h1, h2, h3, .font-hand {
+        font-family: var(--font-hand);
+        font-weight: 500;
+        letter-spacing: -0.01em;
+    }
+
+    ::selection {
+        @apply bg-cobalt text-paper;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@utility container-shop {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+}
+
+@utility btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-[15px] font-medium transition
+        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+@utility btn-primary {
+    @apply btn bg-ink text-paper hover:bg-ink/85;
+}
+
+@utility btn-outline {
+    @apply btn border-[1.5px] border-ink text-ink hover:bg-ink hover:text-paper;
+}
+
+@utility btn-ghost {
+    @apply btn px-3 text-ink-soft hover:text-ink;
+}
+
+@utility label {
+    @apply mb-1.5 block text-sm font-medium text-ink;
+}
+
+@utility input {
+    @apply block w-full rounded-xl border border-line bg-white/70 px-4 py-3 text-[16px] text-ink placeholder:text-ink-faint
+        focus:border-ink focus:bg-white focus:outline-none focus:ring-0;
+}
+
+@utility input-error {
+    @apply border-tile;
+}
+
+@utility field-error {
+    @apply mt-1 text-sm text-tile;
+}
+
+@utility chip {
+    @apply inline-flex items-center rounded-full border border-ink/20 px-3 py-1 text-sm text-ink-soft;
+}
+
+@utility badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+
+@utility card {
+    @apply rounded-2xl border border-line bg-white/60;
+}
+
+/* Wobbly hand-drawn underline under headings and links. */
+@utility hand-underline {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 8' preserveAspectRatio='none'%3E%3Cpath d='M1 5.5C30 2.5 60 6.5 95 4S160 2 199 4.5' fill='none' stroke='%23141414' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 0.35em;
+    padding-bottom: 0.2em;
+}
+
+@utility scrollbar-none {
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
