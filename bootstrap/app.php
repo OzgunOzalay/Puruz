@@ -14,9 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [CaptureUtm::class]);
-
-        // iyzico posts back to these from its own domain, so they cannot carry our CSRF token.
-        $middleware->preventRequestForgery(except: ['odeme/donus', 'odeme/webhook']);
+        $middleware->redirectGuestsTo(fn () => route('filament.admin.auth.login'));
 
         $middleware->trustProxies(at: env('TRUSTED_PROXIES', '127.0.0.1'));
     })

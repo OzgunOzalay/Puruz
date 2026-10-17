@@ -3,15 +3,17 @@
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderTrackingController;
+use App\Http\Controllers\PackingSlipController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 // Catalogue
 Route::get('/', [ShopController::class, 'home'])->name('shop.home');
@@ -39,7 +41,7 @@ Route::post('/odeme/tekrar/{token}', [PaymentController::class, 'retry'])->name(
 Route::get('/odeme/basarisiz/{token}', [PaymentController::class, 'failed'])->name('payment.failed');
 
 // iyzico calls these cross-site: no session (a SameSite cookie would not arrive anyway) and no CSRF.
-Route::withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, EncryptCookies::class, AddQueuedCookiesToResponse::class])
+Route::withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class, EncryptCookies::class, AddQueuedCookiesToResponse::class])
     ->group(function () {
         Route::post('/odeme/donus', [PaymentController::class, 'callback'])->name('payment.callback');
         Route::post('/odeme/webhook', [PaymentController::class, 'webhook'])->name('payment.webhook');
@@ -58,3 +60,8 @@ Route::post('/siparis-sorgula', [OrderTrackingController::class, 'sendLink'])->n
 // Content
 Route::get('/sayfa/{page:slug}', [PageController::class, 'show'])->name('pages.show');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+
+// Printable packing slip for the admin panel (Filament session, same guard).
+Route::get('/yonetim/siparis/{order}/yazdir', [PackingSlipController::class, 'show'])
+    ->name('admin.orders.print')
+    ->middleware('auth');
