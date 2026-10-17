@@ -61,6 +61,15 @@ class SimilarRequestTest extends TestCase
         Mail::assertNotQueued(SimilarRequestReceived::class);
     }
 
+    public function test_contact_is_shown_in_a_readable_form(): void
+    {
+        $phone = new SimilarRequest(['contact' => '+905321234567', 'contact_type' => 'phone']);
+        $email = new SimilarRequest(['contact' => 'ayse@example.com', 'contact_type' => 'email']);
+
+        $this->assertSame('0532 123 45 67', $phone->displayContact());
+        $this->assertSame('ayse@example.com', $email->displayContact());
+    }
+
     public function test_request_with_email_also_confirms_to_customer(): void
     {
         $this->send(['contact' => 'Ayse@Example.com']);

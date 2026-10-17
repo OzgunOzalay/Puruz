@@ -19,6 +19,7 @@ use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class ViewSimilarRequest extends ViewRecord
@@ -35,7 +36,8 @@ class ViewSimilarRequest extends ViewRecord
         return $schema->columns(3)->components([
             Grid::make(1)->columnSpan(2)->schema([
                 Section::make('Talep')->schema([
-                    TextEntry::make('message')->hiddenLabel()->extraAttributes(['class' => 'whitespace-pre-line']),
+                    TextEntry::make('message')->hiddenLabel()
+                        ->formatStateUsing(fn (string $state) => new HtmlString(nl2br(e($state))))->html(),
                     TextEntry::make('created_at')->label('Geldi')
                         ->formatStateUsing(fn (SimilarRequest $record) => Human::date($record->created_at)),
                 ]),
@@ -49,6 +51,7 @@ class ViewSimilarRequest extends ViewRecord
             Grid::make(1)->columnSpan(1)->schema([
                 Section::make('İletişim')->schema([
                     TextEntry::make('contact')->hiddenLabel()->copyable()
+                        ->formatStateUsing(fn (SimilarRequest $record) => $record->displayContact())
                         ->suffix(fn (SimilarRequest $record) => $record->isEmail() ? null : ' · WhatsApp')
                         ->url(fn (SimilarRequest $record) => $record->whatsappUrl() ?? $record->mailtoUrl('Pürüz Atölye · talebiniz'), shouldOpenInNewTab: true)
                         ->helperText(fn (SimilarRequest $record) => $record->isEmail() ? 'E-posta göndermek için tıklayın' : 'WhatsApp’ta yazmak için tıklayın'),
@@ -58,7 +61,8 @@ class ViewSimilarRequest extends ViewRecord
                         ->formatStateUsing(fn (SimilarRequest $record) => SimilarRequestResource::statusHtml($record))->html(),
                 ]),
                 Section::make('Notlarım')->schema([
-                    TextEntry::make('admin_note')->hiddenLabel()->placeholder('Not yok')->extraAttributes(['class' => 'whitespace-pre-line']),
+                    TextEntry::make('admin_note')->hiddenLabel()->placeholder('Not yok')
+                        ->formatStateUsing(fn (string $state) => new HtmlString(nl2br(e($state))))->html(),
                 ]),
             ]),
         ]);

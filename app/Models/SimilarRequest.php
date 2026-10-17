@@ -33,6 +33,16 @@ class SimilarRequest extends Model
         return $this->contact_type === 'email';
     }
 
+    /** "0532 123 45 67" for phones, the address itself for emails. */
+    public function displayContact(): string
+    {
+        if ($this->isEmail() || ! preg_match('/^\+90(\d{3})(\d{3})(\d{2})(\d{2})$/', $this->contact, $m)) {
+            return $this->contact;
+        }
+
+        return '0'.$m[1].' '.$m[2].' '.$m[3].' '.$m[4];
+    }
+
     public function whatsappUrl(string $text = ''): ?string
     {
         return $this->isEmail() ? null : 'https://wa.me/'.ltrim($this->contact, '+').($text !== '' ? '?text='.rawurlencode($text) : '');

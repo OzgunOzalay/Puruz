@@ -51,7 +51,6 @@ class ProductForm
                         FileUpload::make('images')
                             ->hiddenLabel()
                             ->helperText('4:5 dikey fotoğraflar en iyi sonucu verir. Sürükleyerek sıralayın; ilk fotoğraf kapak olur.')
-                            ->extraAttributes(['class' => 'min-h-64'])
                             ->image()
                             ->multiple()
                             ->reorderable()

@@ -36,7 +36,7 @@ class Waiting extends Widget
             ->map(fn (SimilarRequest $request) => [
                 'type' => 'request',
                 'title' => $request->product?->name.' gibi',
-                'meta' => 'Talep · '.$request->contact,
+                'meta' => 'Talep · '.$request->displayContact(),
                 'since' => $request->created_at,
                 'url' => SimilarRequestResource::getUrl('view', ['record' => $request]),
                 'action' => null,

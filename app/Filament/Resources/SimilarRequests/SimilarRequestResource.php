@@ -70,7 +70,7 @@ class SimilarRequestResource extends Resource
                     ->disk('public')->imageSize(48)->square(),
                 TextColumn::make('product.name')->label('Parça')
                     ->formatStateUsing(fn (SimilarRequest $record) => $record->product?->name.' gibi')
-                    ->description(fn (SimilarRequest $record) => $record->contact),
+                    ->description(fn (SimilarRequest $record) => $record->displayContact()),
                 TextColumn::make('message')->label('Talep')
                     ->formatStateUsing(fn (string $state) => Str::limit(Str::before($state, "\n") ?: $state, 70))
                     ->searchable(),

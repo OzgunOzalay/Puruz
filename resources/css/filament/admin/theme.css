@@ -84,3 +84,8 @@
     box-shadow: none;
     font-weight: 500;
 }
+
+/* Product photos: a generous drop area, since photos are what sell a unique piece. */
+.fi-fo-file-upload .filepond--drop-label {
+    min-height: 9rem;
+}
