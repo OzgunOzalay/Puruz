@@ -39,7 +39,7 @@ class OrderConfirmed extends Mailable implements ShouldQueue
 
         if ($this->order->contract_snapshot) {
             $attachments[] = Attachment::fromData(
-                fn () => Pdf::loadView('contracts.pdf', ['order' => $this->order])->output(),
+                fn () => Pdf::loadView('contracts.pdf', ['order' => $this->order])->setOption('isFontSubsettingEnabled', true)->output(),
                 'mesafeli-satis-sozlesmesi-'.$this->order->number.'.pdf',
             )->withMime('application/pdf');
         }

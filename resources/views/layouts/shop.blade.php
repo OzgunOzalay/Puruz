@@ -5,6 +5,8 @@
     $description = trim($__env->yieldContent('description')) ?: ($settings['hero_text'] ?? '');
     $instagram = $settings['instagram_handle'] ?? null;
     $whatsapp = $settings['whatsapp_number'] ?? null;
+    // The workshops link is always in the menu, so a category with the same name would be a duplicate.
+    $menuCategories = $navCategories->reject(fn ($c) => \Illuminate\Support\Str::slug($c->name) === 'atolyeler');
 @endphp
 <!DOCTYPE html>
 <html lang="tr">
@@ -58,15 +60,15 @@
     @endif
 
     <header x-data="{ menu: false, search: false }" class="sticky top-0 z-40 border-b border-line/80 bg-paper/90 backdrop-blur supports-[backdrop-filter]:bg-paper/80">
-        <div class="container-shop flex h-16 items-center justify-between gap-3">
-            <div class="flex flex-1 items-center gap-1">
+        <div class="container-shop grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-3">
+            <div class="flex items-center gap-1">
                 <button type="button" class="-ml-2 rounded-full p-2 lg:hidden" @click="menu = !menu" :aria-expanded="menu" aria-label="Menü">
                     <x-glyph name="menu" x-show="!menu" />
                     <x-glyph name="close" x-show="menu" x-cloak />
                 </button>
-                <nav class="hidden items-center gap-6 text-[15px] lg:flex">
+                <nav class="hidden items-center gap-5 whitespace-nowrap text-[15px] lg:flex">
                     <a href="{{ route('shop.index') }}" class="hover:text-ink-soft">ürünler</a>
-                    @foreach ($navCategories->take(4) as $navCategory)
+                    @foreach ($menuCategories->take(3) as $navCategory)
                         <a href="{{ $navCategory->url() }}" class="lowercase hover:text-ink-soft">{{ $navCategory->name }}</a>
                     @endforeach
                     <a href="{{ route('shop.workshops') }}" class="hover:text-ink-soft">atölyeler</a>
@@ -77,7 +79,7 @@
                 <x-logo class="h-8 w-auto sm:h-9" />
             </a>
 
-            <div class="flex flex-1 items-center justify-end gap-1">
+            <div class="flex items-center justify-end gap-1">
                 <button type="button" class="rounded-full p-2" @click="search = !search; $nextTick(() => $refs.q?.focus())" aria-label="Ara">
                     <x-glyph name="search" />
                 </button>
@@ -100,7 +102,7 @@
         <div x-show="menu" x-collapse x-cloak class="border-t border-line/80 lg:hidden">
             <nav class="container-shop flex flex-col py-3 font-hand text-2xl">
                 <a href="{{ route('shop.index') }}" class="py-2">tüm ürünler</a>
-                @foreach ($navCategories as $navCategory)
+                @foreach ($menuCategories as $navCategory)
                     <a href="{{ $navCategory->url() }}" class="py-2 lowercase">{{ $navCategory->name }}</a>
                 @endforeach
                 <a href="{{ route('shop.workshops') }}" class="py-2">atölyeler</a>

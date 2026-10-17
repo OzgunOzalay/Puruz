@@ -1,0 +1,25 @@
+# Local trial run of the production stack over plain HTTP, with Mailpit to read the emails:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# Shop: http://localhost  ·  Admin: http://localhost/yonetim  ·  Mail: http://localhost:8025
+services:
+  app:
+    environment:
+      SERVER_NAME: ":80"
+      APP_URL: http://localhost
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+    ports: !override
+      - "80:80"
+
+  worker:
+    environment:
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+
+  mailpit:
+    image: axllent/mailpit:v1.20
+    ports:
+      - "8025:8025"
+
+  backup:
+    profiles: ["backup"]

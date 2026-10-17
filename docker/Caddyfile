@@ -1,0 +1,29 @@
+{
+	{$CADDY_GLOBAL_OPTIONS}
+	frankenphp
+}
+
+# SERVER_NAME is the shop domain, e.g. "puruzatolye.com, www.puruzatolye.com"; Caddy gets
+# Let's Encrypt certificates for each name. Use ":80" for a local run without HTTPS.
+{$SERVER_NAME:localhost} {
+	root * /app/public
+	encode zstd br gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options SAMEORIGIN
+		-Server
+	}
+
+	# Fingerprinted build files and uploaded images rarely change.
+	@static path /build/* /storage/* /images/* /fonts/* /css/filament/* /js/filament/*
+	header @static Cache-Control "public, max-age=2592000"
+
+	request_body {
+		max_size 40MB
+	}
+
+	php_server
+}
