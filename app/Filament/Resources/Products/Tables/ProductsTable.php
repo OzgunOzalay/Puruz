@@ -6,28 +6,28 @@ use App\Enums\ProductStatus;
 use App\Enums\ProductType;
 use App\Enums\ProductVisibility;
 use App\Filament\Resources\Products\ProductResource;
+use App\Filament\Resources\Products\ProductStatusText;
 use App\Models\Category;
 use App\Models\Product;
 use App\Support\Money;
-use App\Support\Settings;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\ReplicateAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -35,6 +35,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class ProductsTable
@@ -42,82 +43,80 @@ class ProductsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->defaultSort('sort_order')
+            ->defaultSort('created_at', 'desc')
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['variants', 'sessions', 'categories']))
             ->columns([
                 ImageColumn::make('cover')
                     ->label('')
                     ->state(fn (Product $record) => $record->coverImage())
                     ->disk('public')
-                    ->imageSize(48)
+                    ->imageSize(56)
                     ->square(),
                 TextColumn::make('name')
-                    ->label('Ürün')
+                    ->label('Parça')
                     ->searchable(['name', 'sku'])
                     ->sortable()
-                    ->weight('medium')
-                    ->description(fn (Product $record) => collect([$record->type->getLabel(), $record->sku])->filter()->implode(' · ')),
+                    ->weight(FontWeight::Medium)
+                    ->description(fn (Product $record) => collect([$record->categories->first()?->name, $record->sku, $record->dimensions])->filter()->implode(' · ')),
                 TextColumn::make('price')
                     ->label('Fiyat')
                     ->sortable()
                     ->formatStateUsing(fn (int $state) => Money::format($state))
-                    ->description(fn (Product $record) => $record->isOnSale() ? 'önce '.Money::format($record->compare_at_price) : null),
-                TextColumn::make('stock')
-                    ->label('Stok')
-                    ->sortable()
-                    ->state(fn (Product $record) => self::stockLabel($record))
-                    ->color(fn (Product $record) => self::stockColor($record))
-                    ->badge(),
-                SelectColumn::make('status')
+                    ->description(fn (Product $record) => $record->isOnSale() ? new HtmlString('<s>'.e(Money::format($record->compare_at_price)).'</s>') : null),
+                TextColumn::make('state')
                     ->label('Durum')
-                    ->options(ProductStatus::class)
-                    ->selectablePlaceholder(false)
-                    ->sortable(),
-                SelectColumn::make('visibility')
-                    ->label('Görünürlük')
-                    ->options(ProductVisibility::class)
-                    ->selectablePlaceholder(false),
-                ToggleColumn::make('is_featured')
-                    ->label('Öne çıkan'),
-                TextColumn::make('categories.name')
-                    ->label('Kategoriler')
-                    ->badge()
-                    ->color('gray')
-                    ->toggleable(),
+                    ->state(fn (Product $record) => ProductStatusText::html($record))
+                    ->html()
+                    // "Days in shop" for available pieces, sale date for sold ones.
+                    ->sortable(query: fn (Builder $query, string $direction) => $query->orderByRaw(
+                        'COALESCE(sold_at, published_at, created_at) '.($direction === 'asc' ? 'asc' : 'desc'))),
+                TextColumn::make('visibility')
+                    ->label('Nerede')
+                    ->formatStateUsing(fn (Product $record) => match ($record->visibility) {
+                        ProductVisibility::Public => 'Mağazada',
+                        ProductVisibility::Unlisted => 'Sadece link',
+                        ProductVisibility::Hidden => 'Gizli',
+                    }.($record->is_featured ? ' · ★' : ''))
+                    ->color('gray'),
                 TextColumn::make('view_count')
                     ->label('Görüntülenme')
                     ->numeric()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('sort_order')
-                    ->label('Sıra')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->label('Güncellendi')
-                    ->since()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
             ])
             ->filters([
-                SelectFilter::make('type')->label('Tür')->options(ProductType::class),
-                SelectFilter::make('status')->label('Durum')->options(ProductStatus::class),
-                SelectFilter::make('visibility')->label('Görünürlük')->options(ProductVisibility::class),
                 SelectFilter::make('categories')->label('Kategori')->relationship('categories', 'name')->multiple()->preload(),
+                Filter::make('price')
+                    ->label('Fiyat aralığı')
+                    ->schema([
+                        TextInput::make('min')->label('En az (₺)')->numeric(),
+                        TextInput::make('max')->label('En çok (₺)')->numeric(),
+                    ])
+                    ->query(fn (Builder $query, array $data) => $query
+                        ->when(filled($data['min'] ?? null), fn (Builder $q) => $q->where('price', '>=', (int) $data['min'] * 100))
+                        ->when(filled($data['max'] ?? null), fn (Builder $q) => $q->where('price', '<=', (int) $data['max'] * 100))),
                 TernaryFilter::make('is_featured')->label('Öne çıkan'),
-                Filter::make('low_stock')
-                    ->label('Stoğu azalanlar')
-                    ->query(fn (Builder $query) => $query
-                        ->where('type', ProductType::Physical)
-                        ->where('track_stock', true)
-                        ->where('made_to_order', false)
-                        ->where('stock', '<=', (int) Settings::get('low_stock_threshold', 2))
-                        ->whereDoesntHave('variants')),
+                SelectFilter::make('visibility')->label('Görünürlük')->options(ProductVisibility::class),
                 TrashedFilter::make(),
             ])
             ->recordActions([
                 ActionGroup::make([
-                    EditAction::make(),
+                    Action::make('togglePublish')
+                        ->label(fn (Product $record) => $record->status === ProductStatus::Published ? 'Taslağa al' : 'Yayınla')
+                        ->icon(fn (Product $record) => $record->status === ProductStatus::Published ? 'heroicon-o-eye-slash' : 'heroicon-o-eye')
+                        ->action(fn (Product $record) => self::bulkUpdate(new Collection([$record]), [
+                            'status' => $record->status === ProductStatus::Published ? ProductStatus::Draft : ProductStatus::Published,
+                        ])),
+                    Action::make('visibility')
+                        ->label('Görünürlük')
+                        ->icon('heroicon-o-adjustments-horizontal')
+                        ->fillForm(fn (Product $record) => ['visibility' => $record->visibility])
+                        ->schema([Radio::make('visibility')->label('Görünürlük')->options(ProductVisibility::class)->required()])
+                        ->action(fn (Product $record, array $data) => self::bulkUpdate(new Collection([$record]), ['visibility' => $data['visibility']])),
+                    Action::make('toggleFeatured')
+                        ->label(fn (Product $record) => $record->is_featured ? 'Öne çıkarmayı kaldır' : 'Öne çıkar')
+                        ->icon('heroicon-o-star')
+                        ->action(fn (Product $record) => self::bulkUpdate(new Collection([$record]), ['is_featured' => ! $record->is_featured])),
                     Action::make('share')
                         ->label('Instagram linki')
                         ->icon('heroicon-o-link')
@@ -131,16 +130,20 @@ class ProductsTable
                         ->url(fn (Product $record) => $record->isReachable() ? $record->url() : $record->previewUrl(), shouldOpenInNewTab: true),
                     ReplicateAction::make()
                         ->label('Kopyala')
-                        ->excludeAttributes(['view_count', 'sku'])
+                        ->excludeAttributes(['view_count', 'sku', 'images', 'og_image', 'sold_at', 'published_at'])
                         ->beforeReplicaSaved(function (Product $replica, Product $record) {
                             $replica->name = $record->name.' (kopya)';
                             $replica->slug = $record->slug.'-'.Str::lower(Str::random(4));
                             $replica->status = ProductStatus::Draft;
+                            $replica->images = [];
+                            $replica->stock = $record->isUnique() ? 1 : $record->stock;
                         })
                         ->after(function (Product $replica, Product $record) {
                             $replica->categories()->sync($record->categories->pluck('id'));
-                            foreach ($record->variants as $variant) {
-                                $replica->variants()->create($variant->only(['name', 'price', 'stock', 'is_active', 'sort_order']));
+                            if ($record->type === ProductType::Physical) {
+                                foreach ($record->variants as $variant) {
+                                    $replica->variants()->create($variant->only(['name', 'price', 'stock', 'is_active', 'sort_order']));
+                                }
                             }
                         })
                         ->successRedirectUrl(fn (Product $replica) => ProductResource::getUrl('edit', ['record' => $replica])),
@@ -188,39 +191,5 @@ class ProductsTable
     {
         $records->each(fn (Product $product) => $product->update($attributes));
         Notification::make()->success()->title($records->count().' ürün güncellendi')->send();
-    }
-
-    private static function stockLabel(Product $record): string
-    {
-        if ($record->isWorkshop()) {
-            $upcoming = $record->sessions->filter(fn ($s) => $s->starts_at->isFuture());
-
-            return $upcoming->count().' seans · '.$upcoming->sum(fn ($s) => $s->seatsLeft()).' yer';
-        }
-
-        if ($record->variants->isNotEmpty()) {
-            return $record->track_stock ? $record->variants->sum('stock').' (seçenekler)' : 'takipsiz';
-        }
-
-        if ($record->made_to_order) {
-            return 'siparişe özel';
-        }
-
-        return $record->track_stock ? (string) $record->stock : 'takipsiz';
-    }
-
-    private static function stockColor(Product $record): string
-    {
-        if ($record->isWorkshop() || $record->made_to_order || ! $record->track_stock) {
-            return 'gray';
-        }
-
-        $stock = $record->variants->isNotEmpty() ? $record->variants->sum('stock') : $record->stock;
-
-        return match (true) {
-            $stock <= 0 => 'danger',
-            $stock <= (int) Settings::get('low_stock_threshold', 2) => 'warning',
-            default => 'success',
-        };
     }
 }
