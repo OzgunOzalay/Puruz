@@ -21,7 +21,9 @@ class OrderTrackingTest extends TestCase
         $order = Order::factory()->create();
 
         $this->get('/siparis/'.$order->tracking_token)->assertOk()->assertSee($order->number)->assertSee('noindex', false);
-        $this->get('/siparis/'.substr($order->tracking_token, 0, -1).'x')->assertNotFound();
+        // Change the last character to a different one (a token can itself end in "x").
+        $wrong = substr($order->tracking_token, 0, -1).(str_ends_with($order->tracking_token, 'x') ? 'y' : 'x');
+        $this->get('/siparis/'.$wrong)->assertNotFound();
         $this->assertSame(40, strlen($order->tracking_token));
     }
 
