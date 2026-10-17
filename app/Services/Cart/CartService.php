@@ -3,7 +3,6 @@
 namespace App\Services\Cart;
 
 use App\Enums\ProductType;
-use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\WorkshopSession;
@@ -19,8 +18,6 @@ use InvalidArgumentException;
 class CartService
 {
     private const KEY = 'cart.items';
-
-    private const COUPON_KEY = 'cart.coupon';
 
     public const MAX_QUANTITY = 20;
 
@@ -107,7 +104,7 @@ class CartService
 
     public function clear(): void
     {
-        $this->session->forget([self::KEY, self::COUPON_KEY]);
+        $this->session->forget(self::KEY);
         $this->lines = null;
     }
 
@@ -206,50 +203,9 @@ class CartService
         return $this->lines()->sum(fn (CartLine $line) => $line->total());
     }
 
-    public function applyCoupon(string $code): Coupon
-    {
-        $coupon = Coupon::query()->where('code', mb_strtoupper(trim($code)))->first();
-        if (! $coupon) {
-            throw new InvalidArgumentException('Kupon kodu bulunamadı.');
-        }
-
-        if ($error = $coupon->validationError($this->subtotal())) {
-            throw new InvalidArgumentException($error);
-        }
-
-        $this->session->put(self::COUPON_KEY, $coupon->code);
-
-        return $coupon;
-    }
-
-    public function removeCoupon(): void
-    {
-        $this->session->forget(self::COUPON_KEY);
-    }
-
-    public function coupon(): ?Coupon
-    {
-        $code = $this->session->get(self::COUPON_KEY);
-        if (! $code) {
-            return null;
-        }
-
-        $coupon = Coupon::query()->where('code', $code)->first();
-        if (! $coupon || $coupon->validationError($this->subtotal())) {
-            return null;
-        }
-
-        return $coupon;
-    }
-
-    public function discount(): int
-    {
-        return $this->coupon()?->discountFor($this->subtotal()) ?? 0;
-    }
-
     public function shipping(): int
     {
-        return self::shippingFor($this->requiresShipping(), $this->subtotal() - $this->discount());
+        return self::shippingFor($this->requiresShipping(), $this->subtotal());
     }
 
     public static function shippingFor(bool $requiresShipping, int $amount): int
@@ -268,7 +224,7 @@ class CartService
 
     public function total(): int
     {
-        return max(0, $this->subtotal() - $this->discount() + $this->shipping());
+        return $this->subtotal() + $this->shipping();
     }
 
     /** Amount still needed for free shipping, or null if not applicable. */
@@ -279,7 +235,7 @@ class CartService
             return null;
         }
 
-        $gap = $threshold - ($this->subtotal() - $this->discount());
+        $gap = $threshold - ($this->subtotal());
 
         return $gap > 0 ? $gap : null;
     }

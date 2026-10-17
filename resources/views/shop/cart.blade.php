@@ -50,24 +50,6 @@
 
                 <aside class="space-y-5 lg:sticky lg:top-24 lg:self-start">
                     <div class="card p-5">
-                        @if ($cart->coupon())
-                            <form method="POST" action="{{ route('cart.coupon.remove') }}" class="mb-4 flex items-center justify-between rounded-xl bg-cobalt-soft px-3 py-2 text-sm text-cobalt">
-                                @csrf @method('DELETE')
-                                <span>Kupon: <strong>{{ $cart->coupon()->code }}</strong></span>
-                                <button class="underline">kaldır</button>
-                            </form>
-                        @else
-                            <form method="POST" action="{{ route('cart.coupon') }}" class="mb-4">
-                                @csrf
-                                <label for="code" class="label">İndirim kodu</label>
-                                <div class="flex gap-2">
-                                    <input id="code" name="code" value="{{ old('code') }}" class="input py-2.5 uppercase" autocapitalize="characters">
-                                    <button class="btn-outline px-4 py-2.5">uygula</button>
-                                </div>
-                                @error('code')<p class="field-error">{{ $message }}</p>@enderror
-                            </form>
-                        @endif
-
                         @include('shop.partials.summary')
 
                         @if ($gap = $cart->freeShippingGap())

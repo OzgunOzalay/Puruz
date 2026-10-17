@@ -2,12 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Enums\CouponType;
 use App\Enums\ProductStatus;
 use App\Enums\ProductType;
 use App\Enums\ProductVisibility;
 use App\Models\Category;
-use App\Models\Coupon;
 use App\Models\Product;
 use App\Support\ProductImages;
 use Carbon\CarbonImmutable;
@@ -126,13 +124,6 @@ class DemoSeeder extends Seeder
                 ]);
             }
         }
-
-        Coupon::query()->create([
-            'code' => 'HOSGELDIN10',
-            'description' => 'İlk siparişe %10 indirim',
-            'type' => CouponType::Percent,
-            'value' => 10,
-        ]);
     }
 
     private function storeImage(string $name): string

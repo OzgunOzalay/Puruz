@@ -8,7 +8,6 @@ enum NavigationGroup: string implements HasLabel
 {
     case Orders = 'orders';
     case Catalog = 'catalog';
-    case Marketing = 'marketing';
     case Content = 'content';
     case System = 'system';
 
@@ -17,7 +16,6 @@ enum NavigationGroup: string implements HasLabel
         return match ($this) {
             self::Orders => 'Satış',
             self::Catalog => 'Katalog',
-            self::Marketing => 'Pazarlama',
             self::Content => 'İçerik',
             self::System => 'Sistem',
         };

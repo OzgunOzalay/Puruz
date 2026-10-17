@@ -104,7 +104,6 @@
                     @endforeach
                 </ul>
                 <dl class="mt-4 space-y-1.5 text-[15px]">
-                    @if ($order->discount_total)<div class="flex justify-between text-moss"><dt>İndirim</dt><dd>−{{ Money::format($order->discount_total) }}</dd></div>@endif
                     @if ($order->requires_shipping)<div class="flex justify-between"><dt class="text-ink-soft">Kargo</dt><dd>{{ $order->shipping_total ? Money::format($order->shipping_total) : 'ücretsiz' }}</dd></div>@endif
                     <div class="flex justify-between text-lg font-medium"><dt>Toplam</dt><dd>{{ Money::format($order->total) }}</dd></div>
                     @if ($order->refunded_total)<div class="flex justify-between text-ink-soft"><dt>İade edilen</dt><dd>{{ Money::format($order->refunded_total) }}</dd></div>@endif

@@ -29,9 +29,6 @@
         </tbody>
         <tfoot class="text-right">
             <tr><td colspan="3" class="pt-3 pr-3 text-gray-500">Ara toplam</td><td class="pt-3">{{ Money::format($order->subtotal) }}</td></tr>
-            @if ($order->discount_total)
-                <tr><td colspan="3" class="pr-3 text-gray-500">İndirim ({{ $order->coupon_code }})</td><td>−{{ Money::format($order->discount_total) }}</td></tr>
-            @endif
             @if ($order->requires_shipping)
                 <tr><td colspan="3" class="pr-3 text-gray-500">Kargo</td><td>{{ Money::format($order->shipping_total) }}</td></tr>
             @endif

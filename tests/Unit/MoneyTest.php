@@ -2,9 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Services\Payment\BasketBuilder;
 use App\Support\Money;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class MoneyTest extends TestCase
@@ -33,29 +31,5 @@ class MoneyTest extends TestCase
         $this->assertSame(250, Money::parse('2.5'));
         $this->assertSame(120, Money::parse(1.2));
         $this->assertNull(Money::parse(''));
-    }
-
-    #[DataProvider('discounts')]
-    public function test_discount_distribution_always_adds_up(array $lines, int $discount): void
-    {
-        $result = BasketBuilder::distributeDiscount($lines, $discount);
-
-        $this->assertSame(array_sum($lines) - min($discount, array_sum($lines)), array_sum($result));
-        $this->assertSame(array_keys($lines), array_keys($result));
-        foreach ($result as $value) {
-            $this->assertGreaterThanOrEqual(0, $value);
-        }
-    }
-
-    public static function discounts(): array
-    {
-        return [
-            'no discount' => [['a' => 1000, 'b' => 2000], 0],
-            'uneven split' => [['a' => 333, 'b' => 333, 'c' => 334], 100],
-            'ten percent' => [['a' => 65000, 'b' => 320000], 38500],
-            'rounding remainder' => [['a' => 1, 'b' => 1, 'c' => 1], 2],
-            'whole basket' => [['a' => 500, 'b' => 700], 1200],
-            'more than basket' => [['a' => 500], 900],
-        ];
     }
 }

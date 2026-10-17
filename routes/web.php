@@ -31,8 +31,6 @@ Route::post('/sepet', [CartController::class, 'add'])->name('cart.add');
 Route::post('/hemen-al', [CartController::class, 'buyNow'])->name('cart.buy-now');
 Route::patch('/sepet/{key}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/sepet/{key}', [CartController::class, 'remove'])->name('cart.remove');
-Route::post('/sepet/kupon', [CartController::class, 'applyCoupon'])->name('cart.coupon');
-Route::delete('/sepet-kupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
 
 // Checkout and payment
 Route::get('/odeme', [CheckoutController::class, 'show'])->name('checkout.show');

@@ -8,7 +8,6 @@ use App\Enums\ProductType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -64,11 +63,6 @@ class Order extends Model
     public function refunds(): HasMany
     {
         return $this->hasMany(OrderRefund::class);
-    }
-
-    public function coupon(): BelongsTo
-    {
-        return $this->belongsTo(Coupon::class);
     }
 
     public function scopePaid(Builder $query): void

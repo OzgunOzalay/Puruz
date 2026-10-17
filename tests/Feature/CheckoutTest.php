@@ -2,13 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Enums\CouponType;
 use App\Enums\OrderStatus;
 use App\Mail\AdminAlert;
 use App\Mail\AdminNewOrder;
 use App\Mail\OrderConfirmed;
 use App\Mail\OrderStatusChanged;
-use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\Cart\CartService;
@@ -222,20 +220,17 @@ class CheckoutTest extends TestCase
         $this->assertSame('Kobalt', $order->items->first()->variant_name);
     }
 
-    public function test_coupon_discount_is_applied_and_counted(): void
+    // Review focus 4
+    public function test_totals_and_basket_are_exact_without_discounts(): void
     {
-        $coupon = Coupon::query()->create(['code' => 'HOSGELDIN10', 'type' => CouponType::Percent, 'value' => 10]);
-        $product = Product::factory()->create(['price' => 100000]);
+        $product = Product::factory()->create(['price' => 65000, 'stock' => 3]);
 
-        $this->post('/sepet', ['product_id' => $product->id]);
-        $this->post('/sepet/kupon', ['code' => 'hosgeldin10'])->assertSessionHas('status');
-        $this->post('/odeme', $this->checkoutData());
+        $order = $this->placeOrder($product, 2);
 
-        $order = Order::query()->firstOrFail();
-        $this->assertSame(10000, $order->discount_total);
-        $this->assertSame(100000 - 10000 + 9000, $order->total);
-        $this->assertSame(90000, $order->items->first()->charged_total);
-        $this->assertSame(1, $coupon->fresh()->used_count);
+        $this->assertSame(130000 + 9000, $order->total);
+        $this->assertSame([130000], $order->items->pluck('charged_total')->all());
+        $this->assertSame($order->total, $order->items->sum('charged_total') + $order->shipping_total);
+        $this->post('/sepet/kupon', ['code' => 'X'])->assertStatus(405); // coupon route removed
     }
 
     public function test_free_shipping_above_threshold(): void

@@ -51,26 +51,6 @@ class CartController extends Controller
         return back();
     }
 
-    public function applyCoupon(Request $request): RedirectResponse
-    {
-        $request->validate(['code' => ['required', 'string', 'max:50']]);
-
-        try {
-            $coupon = $this->cart->applyCoupon($request->string('code'));
-        } catch (InvalidArgumentException $e) {
-            return back()->withErrors(['code' => $e->getMessage()])->withInput();
-        }
-
-        return back()->with('status', "“{$coupon->code}” kuponu uygulandı.");
-    }
-
-    public function removeCoupon(): RedirectResponse
-    {
-        $this->cart->removeCoupon();
-
-        return back();
-    }
-
     private function addFromRequest(Request $request): bool
     {
         $data = $request->validate([

@@ -199,7 +199,7 @@ class OrderActions
         return response()->streamDownload(function () use ($records) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Sipariş', 'Tarih', 'Durum', 'Müşteri', 'E-posta', 'Telefon', 'İl', 'İlçe', 'Adres', 'Ürünler', 'Ara toplam', 'İndirim', 'Kargo', 'Toplam', 'İade', 'Kargo firması', 'Takip no', 'Kaynak'], ';');
+            fputcsv($out, ['Sipariş', 'Tarih', 'Durum', 'Müşteri', 'E-posta', 'Telefon', 'İl', 'İlçe', 'Adres', 'Ürünler', 'Ara toplam', 'Kargo', 'Toplam', 'İade', 'Kargo firması', 'Takip no', 'Kaynak'], ';');
             foreach ($records as $order) {
                 fputcsv($out, [
                     $order->number,
@@ -213,7 +213,6 @@ class OrderActions
                     $order->shipping_address,
                     $order->items->map(fn ($i) => $i->quantity.'x '.$i->displayName())->implode(' | '),
                     Money::toDecimal($order->subtotal),
-                    Money::toDecimal($order->discount_total),
                     Money::toDecimal($order->shipping_total),
                     Money::toDecimal($order->total),
                     Money::toDecimal($order->refunded_total),

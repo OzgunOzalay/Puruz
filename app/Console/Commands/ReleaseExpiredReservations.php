@@ -10,7 +10,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 #[Signature('shop:release-reservations')]
-#[Description('Unpaid orders past their reservation window give their stock, seats and coupon back')]
+#[Description('Unpaid orders past their reservation window give their stock and seats back')]
 class ReleaseExpiredReservations extends Command
 {
     public function handle(ReservationService $reservations): int

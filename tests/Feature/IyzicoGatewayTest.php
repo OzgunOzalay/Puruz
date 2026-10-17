@@ -43,7 +43,7 @@ class IyzicoGatewayTest extends TestCase
     private function order(): Order
     {
         $order = Order::factory()->create([
-            'status' => 'pending_payment', 'subtotal' => 115000, 'discount_total' => 11500, 'shipping_total' => 9000, 'total' => 112500,
+            'status' => 'pending_payment', 'subtotal' => 103500, 'shipping_total' => 9000, 'total' => 112500,
         ]);
         $order->items()->create(['name' => 'Kobalt Kupa', 'unit_price' => 65000, 'quantity' => 1, 'line_total' => 65000, 'charged_total' => 58500]);
         $order->items()->create(['name' => 'Kum Kupa', 'unit_price' => 50000, 'quantity' => 1, 'line_total' => 50000, 'charged_total' => 45000]);

@@ -3,14 +3,12 @@
 namespace App\Services\Checkout;
 
 use App\Enums\OrderStatus;
-use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\WorkshopSession;
 use App\Services\Cart\CartLine;
 use App\Services\Cart\CartService;
-use App\Services\Payment\BasketBuilder;
 use App\Support\Settings;
 use Illuminate\Support\Facades\DB;
 
@@ -20,7 +18,7 @@ class CheckoutService
     public const MINIMUM_TOTAL = 100;
 
     /**
-     * Creates a pending order from the cart and reserves stock, seats and the coupon.
+     * Creates a pending order from the cart and reserves stock and seats.
      *
      * @param  array<string, mixed>  $data  validated checkout form data
      * @param  array<string, string|null>  $context  ip, user_agent and utm values
@@ -36,18 +34,16 @@ class CheckoutService
             throw new CheckoutException(Settings::get('store_closed_message'));
         }
 
-        $order = DB::transaction(function () use ($cart, $lines, $data, $context) {
+        $order = DB::transaction(function () use ($lines, $data, $context) {
             $reserved = [];
             foreach ($lines as $line) {
                 $reserved[$line->key] = $this->reserve($line);
             }
 
             $subtotal = $lines->sum(fn (CartLine $line) => $line->total());
-            $coupon = $this->lockCoupon($cart->coupon(), $subtotal);
-            $discount = $coupon?->discountFor($subtotal) ?? 0;
             $requiresShipping = $lines->contains(fn (CartLine $line) => ! $line->isWorkshop());
-            $shipping = CartService::shippingFor($requiresShipping, $subtotal - $discount);
-            $total = $subtotal - $discount + $shipping;
+            $shipping = CartService::shippingFor($requiresShipping, $subtotal);
+            $total = $subtotal + $shipping;
 
             if ($total < self::MINIMUM_TOTAL) {
                 throw new CheckoutException('Sipariş tutarı ödeme alınabilecek en düşük tutarın altında.');
@@ -78,10 +74,7 @@ class CheckoutService
                 'billing_tax_number' => $corporate ? ($data['billing_tax_number'] ?? null) : null,
                 'subtotal' => $subtotal,
                 'shipping_total' => $shipping,
-                'discount_total' => $discount,
                 'total' => $total,
-                'coupon_id' => $coupon?->id,
-                'coupon_code' => $coupon?->code,
                 'customer_note' => $data['customer_note'] ?? null,
                 'terms_accepted_at' => now(),
                 'marketing_consent' => (bool) ($data['marketing_consent'] ?? false),
@@ -93,11 +86,6 @@ class CheckoutService
                 // A little longer than iyzico's checkout token lifetime (30 minutes).
                 'reserved_until' => now()->addMinutes(max(35, (int) Settings::get('reservation_minutes', 30) + 5)),
             ]);
-
-            $charged = BasketBuilder::distributeDiscount(
-                $lines->mapWithKeys(fn (CartLine $line) => [$line->key => $line->total()])->all(),
-                $discount,
-            );
 
             foreach ($lines as $line) {
                 $order->items()->create([
@@ -112,7 +100,7 @@ class CheckoutService
                     'unit_price' => $line->unitPrice(),
                     'quantity' => $line->quantity,
                     'line_total' => $line->total(),
-                    'charged_total' => $charged[$line->key],
+                    'charged_total' => $line->total(),
                     'stock_reserved' => $reserved[$line->key],
                     'participants' => $line->isWorkshop() ? $this->participants($data, $line) : null,
                 ]);
@@ -166,22 +154,6 @@ class CheckoutService
         $model->decrement('stock', $line->quantity);
 
         return true;
-    }
-
-    private function lockCoupon(?Coupon $coupon, int $subtotal): ?Coupon
-    {
-        if (! $coupon) {
-            return null;
-        }
-
-        $coupon = Coupon::query()->lockForUpdate()->find($coupon->id);
-        if (! $coupon || $coupon->validationError($subtotal)) {
-            return null;
-        }
-
-        $coupon->increment('used_count');
-
-        return $coupon;
     }
 
     private function participants(array $data, CartLine $line): array

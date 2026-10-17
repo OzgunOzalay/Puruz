@@ -3,7 +3,6 @@
 namespace App\Services\Orders;
 
 use App\Enums\ProductType;
-use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -12,7 +11,7 @@ use App\Models\WorkshopSession;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Stock, workshop seats and coupon uses are taken when an order is created (pending payment)
+ * Stock and workshop seats are taken when an order is created (pending payment)
  * and given back if the payment fails, the reservation expires, or the order is refunded with restock.
  */
 class ReservationService
@@ -27,10 +26,6 @@ class ReservationService
 
             foreach ($order->items as $item) {
                 $this->restore($item);
-            }
-
-            if ($order->coupon_id) {
-                Coupon::query()->whereKey($order->coupon_id)->where('used_count', '>', 0)->decrement('used_count');
             }
 
             $order->forceFill(['reservation_released' => true])->save();
@@ -66,10 +61,6 @@ class ReservationService
                         }
                         $model->decrement('stock', $item->quantity);
                     }
-                }
-
-                if ($order->coupon_id) {
-                    Coupon::query()->whereKey($order->coupon_id)->increment('used_count');
                 }
 
                 $order->forceFill(['reservation_released' => false])->save();

@@ -43,8 +43,6 @@ class OrderInfolist
                         TextEntry::make('status')->label('Durum')->badge(),
                         TextEntry::make('created_at')->label('Tarih')->dateTime('d.m.Y H:i'),
                         TextEntry::make('total')->label('Toplam')->formatStateUsing($money)->weight('bold')->size('lg'),
-                        TextEntry::make('coupon_code')->label('Kupon')->placeholder('—')
-                            ->visible(fn (Order $record) => (bool) $record->coupon_code),
                         TextEntry::make('source')->label('Kaynak')
                             ->state(fn (Order $record) => collect([$record->utm_source, $record->utm_medium, $record->utm_campaign])->filter()->implode(' / ') ?: 'doğrudan'),
                         TextEntry::make('cargo')->label('Kargo')

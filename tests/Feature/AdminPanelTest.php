@@ -57,9 +57,11 @@ class AdminPanelTest extends TestCase
 
         foreach (['/yonetim', '/yonetim/urunler', '/yonetim/urunler/create', '/yonetim/urunler/'.$product->slug.'/edit',
             '/yonetim/siparisler', '/yonetim/siparisler/'.$order->id, '/yonetim/kategoriler', '/yonetim/atolye-takvimi',
-            '/yonetim/kuponlar', '/yonetim/sayfalar', '/yonetim/kullanicilar', '/yonetim/ayarlar', route('admin.orders.print', $order)] as $url) {
+            '/yonetim/sayfalar', '/yonetim/kullanicilar', '/yonetim/ayarlar', route('admin.orders.print', $order)] as $url) {
             $this->get($url)->assertOk();
         }
+
+        $this->get('/yonetim/kuponlar')->assertNotFound();
     }
 
     public function test_guests_and_staff_are_restricted(): void

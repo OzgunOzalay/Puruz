@@ -30,7 +30,6 @@
             @foreach ($order->items as $item)
                 <tr><td>{{ $item->displayName() }}</td><td align="right">{{ $item->quantity }}</td><td align="right">{{ Money::format($item->unit_price) }}</td><td align="right">{{ Money::format($item->line_total) }}</td></tr>
             @endforeach
-            @if ($order->discount_total)<tr><td colspan="3">İndirim ({{ $order->coupon_code }})</td><td align="right">−{{ Money::format($order->discount_total) }}</td></tr>@endif
             @if ($order->requires_shipping)<tr><td colspan="3">Kargo</td><td align="right">{{ Money::format($order->shipping_total) }}</td></tr>@endif
             <tr><th colspan="3" align="left">Toplam (KDV dahil)</th><th align="right">{{ Money::format($order->total) }}</th></tr>
         </tbody>

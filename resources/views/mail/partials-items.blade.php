@@ -10,9 +10,6 @@
             <td style="padding:10px 0;border-bottom:1px solid #e6e2d8;" align="right">{{ Money::format($item->line_total) }}</td>
         </tr>
     @endforeach
-    @if ($order->discount_total)
-        <tr><td style="padding:6px 0;color:#3f6b4f;">İndirim</td><td align="right" style="color:#3f6b4f;">−{{ Money::format($order->discount_total) }}</td></tr>
-    @endif
     @if ($order->requires_shipping)
         <tr><td style="padding:6px 0;color:#57554f;">Kargo</td><td align="right">{{ $order->shipping_total ? Money::format($order->shipping_total) : 'ücretsiz' }}</td></tr>
     @endif
