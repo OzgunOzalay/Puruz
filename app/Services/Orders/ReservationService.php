@@ -3,10 +3,12 @@
 namespace App\Services\Orders;
 
 use App\Enums\ProductType;
+use App\Enums\RequestStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\SimilarRequest;
 use App\Models\WorkshopSession;
 use Illuminate\Support\Facades\DB;
 
@@ -79,6 +81,10 @@ class ReservationService
 
         if ($ids->isNotEmpty()) {
             Product::withTrashed()->whereIn('id', $ids)->whereNull('sold_at')->update(['sold_at' => now()]);
+
+            SimilarRequest::query()->whereIn('created_product_id', $ids)
+                ->whereNotIn('status', [RequestStatus::Done, RequestStatus::Cancelled])
+                ->update(['status' => RequestStatus::Done]);
         }
     }
 

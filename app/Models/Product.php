@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\URL;
 
@@ -57,6 +58,12 @@ class Product extends Model
     public function sessions(): HasMany
     {
         return $this->hasMany(WorkshopSession::class)->orderBy('starts_at');
+    }
+
+    /** The "Benzerini iste" request this piece was made for, if any. */
+    public function similarRequest(): HasOne
+    {
+        return $this->hasOne(SimilarRequest::class, 'created_product_id');
     }
 
     public function upcomingSessions(): HasMany
