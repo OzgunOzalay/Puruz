@@ -2,6 +2,7 @@
 
 namespace App\Services\Orders;
 
+use App\Enums\ProductType;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -80,6 +81,16 @@ class ReservationService
         return true;
     }
 
+    /** Marks the unique pieces of a paid order as sold. */
+    public function markSold(Order $order): void
+    {
+        $ids = $order->items->where('product_type', ProductType::Unique->value)->pluck('product_id')->filter();
+
+        if ($ids->isNotEmpty()) {
+            Product::withTrashed()->whereIn('id', $ids)->whereNull('sold_at')->update(['sold_at' => now()]);
+        }
+    }
+
     private function restore(OrderItem $item): void
     {
         if ($item->workshop_session_id) {
@@ -96,7 +107,7 @@ class ReservationService
         if ($item->product_variant_id) {
             ProductVariant::query()->whereKey($item->product_variant_id)->increment('stock', $item->quantity);
         } elseif ($item->product_id) {
-            Product::withTrashed()->whereKey($item->product_id)->increment('stock', $item->quantity);
+            Product::withTrashed()->whereKey($item->product_id)->increment('stock', $item->quantity, ['sold_at' => null]);
         }
     }
 }

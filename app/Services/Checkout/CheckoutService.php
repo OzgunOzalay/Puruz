@@ -158,7 +158,9 @@ class CheckoutService
         }
 
         if (! $model || $model->stock < $line->quantity) {
-            throw new CheckoutException("Üzgünüz, “{$line->product->name}” için yeterli stok kalmadı.");
+            throw new CheckoutException($line->product->isUnique()
+                ? "Üzgünüz, “{$line->product->name}” satıldı."
+                : "Üzgünüz, “{$line->product->name}” için yeterli stok kalmadı.");
         }
 
         $model->decrement('stock', $line->quantity);

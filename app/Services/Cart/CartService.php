@@ -2,6 +2,7 @@
 
 namespace App\Services\Cart;
 
+use App\Enums\ProductType;
 use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -23,6 +24,10 @@ class CartService
 
     public const MAX_QUANTITY = 20;
 
+    public const SOLD_OUT = 'Tükendi';
+
+    public const PIECE_SOLD = 'Bu parça satıldı';
+
     private ?Collection $lines = null;
 
     public function __construct(private readonly Session $session) {}
@@ -43,7 +48,7 @@ class CartService
             if (! $workshopSession?->isBookable()) {
                 throw new InvalidArgumentException('Lütfen uygun bir atölye tarihi seçin.');
             }
-        } elseif ($product->variants()->where('is_active', true)->exists()) {
+        } elseif (! $product->isUnique() && $product->variants()->where('is_active', true)->exists()) {
             $variant = $variantId ? $product->variants()->where('is_active', true)->whereKey($variantId)->first() : null;
             if (! $variant) {
                 throw new InvalidArgumentException('Lütfen bir seçenek belirleyin.');
@@ -52,14 +57,16 @@ class CartService
 
         $key = $this->lineKey($product->id, $variant?->id, $workshopSession?->id);
         $items = $this->session->get(self::KEY, []);
-        $newQuantity = ($items[$key]['quantity'] ?? 0) + $quantity;
+        $newQuantity = $product->isUnique() ? 1 : ($items[$key]['quantity'] ?? 0) + $quantity;
 
         $line = new CartLine($key, $product, $variant, $workshopSession, $newQuantity);
         $max = $line->maxQuantity();
         if ($max !== null && $newQuantity > $max) {
-            throw new InvalidArgumentException($max === 0
-                ? 'Üzgünüz, bu ürün tükendi.'
-                : "Bu üründen en fazla {$max} adet alabilirsiniz.");
+            throw new InvalidArgumentException(match (true) {
+                $product->isUnique() => 'Üzgünüz, bu parça satıldı.',
+                $max === 0 => 'Üzgünüz, bu ürün tükendi.',
+                default => "Bu üründen en fazla {$max} adet alabilirsiniz.",
+            });
         }
 
         $items[$key] = [
@@ -85,7 +92,8 @@ class CartService
         if ($quantity <= 0) {
             unset($items[$key]);
         } else {
-            $items[$key]['quantity'] = min(self::MAX_QUANTITY, $quantity);
+            $isUnique = Product::query()->whereKey($items[$key]['product_id'])->value('type') === ProductType::Unique->value;
+            $items[$key]['quantity'] = $isUnique ? 1 : min(self::MAX_QUANTITY, $quantity);
         }
 
         $this->session->put(self::KEY, $items);
@@ -149,7 +157,7 @@ class CartService
             $max = $line->maxQuantity();
 
             if ($max === 0) {
-                $line->problem = 'Tükendi';
+                $line->problem = $product->isUnique() ? self::PIECE_SOLD : self::SOLD_OUT;
             } elseif ($max !== null && $line->quantity > $max) {
                 $line->quantity = $max;
                 $line->problem = "Stokta yalnızca {$max} adet kaldı, adet güncellendi.";
@@ -185,7 +193,7 @@ class CartService
 
     public function hasSoldOutLines(): bool
     {
-        return $this->lines()->contains(fn (CartLine $line) => $line->problem === 'Tükendi');
+        return $this->lines()->contains(fn (CartLine $line) => in_array($line->problem, [self::SOLD_OUT, self::PIECE_SOLD], true));
     }
 
     public function requiresShipping(): bool

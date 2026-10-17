@@ -154,6 +154,8 @@ class PaymentService
             return;
         }
 
+        $this->reservations->markSold($order);
+
         // Workshop-only orders need no preparation, the booking is confirmed right away.
         if (! $order->requires_shipping) {
             $order->forceFill(['status' => OrderStatus::Confirmed])->save();
