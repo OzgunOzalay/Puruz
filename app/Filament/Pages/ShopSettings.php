@@ -42,11 +42,6 @@ class ShopSettings extends Page
 
     public ?array $data = [];
 
-    public static function canAccess(): bool
-    {
-        return (bool) auth()->user()?->isAdmin();
-    }
-
     public function mount(): void
     {
         $this->form->fill(Settings::all());

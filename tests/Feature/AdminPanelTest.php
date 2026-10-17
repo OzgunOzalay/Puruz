@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
-use App\Enums\UserRole;
 use App\Filament\Pages\ShopSettings;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\Products\Pages\CreateProduct;
@@ -27,7 +26,7 @@ class AdminPanelTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['role' => UserRole::Admin]);
+        return User::factory()->create();
     }
 
     private function paidOrder(array $attributes = []): Order
@@ -57,32 +56,23 @@ class AdminPanelTest extends TestCase
 
         foreach (['/yonetim', '/yonetim/urunler', '/yonetim/urunler/create', '/yonetim/urunler/'.$product->slug.'/edit',
             '/yonetim/siparisler', '/yonetim/siparisler/'.$order->id, '/yonetim/kategoriler', '/yonetim/atolye-takvimi',
-            '/yonetim/sayfalar', '/yonetim/kullanicilar', '/yonetim/ayarlar', route('admin.orders.print', $order)] as $url) {
+            '/yonetim/sayfalar', '/yonetim/ayarlar', route('admin.orders.print', $order)] as $url) {
             $this->get($url)->assertOk();
         }
 
         $this->get('/yonetim/kuponlar')->assertNotFound();
     }
 
-    public function test_guests_and_staff_are_restricted(): void
+    public function test_single_admin_setup(): void
     {
         $this->get('/yonetim')->assertRedirect('/yonetim/login');
         $this->get(route('admin.orders.print', $this->paidOrder()))->assertRedirect('/yonetim/login');
 
-        $this->actingAs(User::factory()->create(['role' => UserRole::Staff]));
-        $this->get('/yonetim/siparisler')->assertOk();
-        $this->get('/yonetim/ayarlar')->assertForbidden();
-        $this->get('/yonetim/kullanicilar')->assertForbidden();
-
-        $this->actingAs(User::factory()->create(['is_active' => false]));
-        $this->get('/yonetim')->assertForbidden();
-    }
-
-    public function test_staff_cannot_see_refund_action(): void
-    {
-        $this->actingAs(User::factory()->create(['role' => UserRole::Staff]));
-
-        Livewire::test(ViewOrder::class, ['record' => $this->paidOrder()->id])->assertActionHidden('refund');
+        $this->actingAs($this->admin());
+        $this->get('/yonetim/kullanicilar')->assertNotFound();
+        $this->get('/yonetim/ayarlar')->assertOk();
+        $this->get('/yonetim/profile')->assertOk();
+        Livewire::test(ViewOrder::class, ['record' => $this->paidOrder()->id])->assertActionVisible('refund');
     }
 
     public function test_product_can_be_created_with_prices_in_lira(): void

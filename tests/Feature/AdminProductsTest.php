@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\ProductStatus;
 use App\Enums\ProductType;
-use App\Enums\UserRole;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
@@ -26,7 +25,7 @@ class AdminProductsTest extends TestCase
     {
         parent::setUp();
         $this->travelTo(CarbonImmutable::parse('2026-11-20 15:00', 'Europe/Istanbul'));
-        $this->actingAs(User::factory()->create(['role' => UserRole::Admin]));
+        $this->actingAs(User::factory()->create());
     }
 
     public function test_state_phrases_read_naturally(): void

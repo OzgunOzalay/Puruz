@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -22,7 +21,6 @@ class AdminUserSeeder extends Seeder
             'name' => env('ADMIN_NAME', 'Pürüz Yönetici'),
             'email' => $email,
             'password' => $password,
-            'role' => UserRole::Admin,
         ]);
 
         if (! env('ADMIN_PASSWORD')) {

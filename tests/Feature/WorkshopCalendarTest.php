@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\UserRole;
 use App\Filament\Resources\WorkshopSessions\Pages\WorkshopCalendar;
 use App\Models\Order;
 use App\Models\Product;
@@ -21,7 +20,7 @@ class WorkshopCalendarTest extends TestCase
     {
         parent::setUp();
 
-        $this->actingAs(User::factory()->create(['role' => UserRole::Admin]));
+        $this->actingAs(User::factory()->create());
     }
 
     private function makeSession(array $attributes = []): WorkshopSession

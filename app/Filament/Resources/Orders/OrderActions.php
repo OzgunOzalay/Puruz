@@ -90,7 +90,7 @@ class OrderActions
             ->label('İade / iptal')
             ->icon('heroicon-o-receipt-refund')
             ->color('danger')
-            ->visible(fn (Order $record) => auth()->user()?->isAdmin() && $record->status->isPaid() && $record->refundableTotal() > 0)
+            ->visible(fn (Order $record) => $record->status->isPaid() && $record->refundableTotal() > 0)
             ->modalDescription('İade, ödemenin alındığı karta iyzico üzerinden yapılır. Aynı gün yapılan tam iadeler iptal olarak işlenir ve komisyon kesilmez.')
             ->schema(fn (Order $record) => [
                 Radio::make('mode')
