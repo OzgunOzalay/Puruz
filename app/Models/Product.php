@@ -9,7 +9,6 @@ use App\Enums\ProductType;
 use App\Enums\ProductVisibility;
 use App\Support\Money;
 use App\Support\ProductImages;
-use App\Support\Settings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -246,18 +245,6 @@ class Product extends Model
     public function previewUrl(): string
     {
         return URL::temporarySignedRoute('shop.product.preview', now()->addDays(3), ['product' => $this->slug]);
-    }
-
-    /** "Benzerini iste": WhatsApp with a prefilled message, or Instagram DM when no number is set. */
-    public function similarRequestUrl(): ?string
-    {
-        $text = 'Merhaba, "'.$this->name.'" gibi bir parça yaptırmak istiyorum: '.$this->url();
-
-        if (filled($whatsapp = Settings::get('whatsapp_number'))) {
-            return 'https://wa.me/'.$whatsapp.'?text='.rawurlencode($text);
-        }
-
-        return filled($instagram = Settings::get('instagram_handle')) ? 'https://ig.me/m/'.$instagram : null;
     }
 
     public function getRouteKeyName(): string

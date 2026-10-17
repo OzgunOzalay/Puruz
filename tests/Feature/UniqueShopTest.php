@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
-use App\Support\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,26 +20,14 @@ class UniqueShopTest extends TestCase
             ->assertDontSee('inputmode="numeric"', false);
     }
 
-    public function test_sold_piece_shows_sold_badge_and_whatsapp_request(): void
+    public function test_sold_piece_shows_sold_badge_and_request_button(): void
     {
-        Settings::set(['whatsapp_number' => '905551112233']);
         $piece = Product::factory()->unique()->sold()->create(['name' => 'Kobalt Kupa']);
-
-        $text = rawurlencode('Merhaba, "Kobalt Kupa" gibi bir parça yaptırmak istiyorum: '.$piece->url());
 
         $this->get($piece->url())->assertOk()
             ->assertSee('satıldı')
             ->assertSee('benzerini iste')
-            ->assertSee('https://wa.me/905551112233?text='.$text, false)
             ->assertDontSee('sepete ekle');
-    }
-
-    public function test_request_falls_back_to_instagram_without_whatsapp(): void
-    {
-        Settings::set(['whatsapp_number' => '', 'instagram_handle' => 'puruzatolye']);
-        $piece = Product::factory()->unique()->sold()->create();
-
-        $this->assertSame('https://ig.me/m/puruzatolye', $piece->similarRequestUrl());
     }
 
     public function test_reserved_piece_shows_notice_and_disabled_button(): void

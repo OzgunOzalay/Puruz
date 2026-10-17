@@ -216,8 +216,10 @@
                 @elseif ($isSold)
                     <div class="mt-7 rounded-2xl bg-paper-deep px-5 py-4">
                         <p class="text-[15px] text-ink-soft">Bu parça yeni evine gitti. Her parçamız tek; benzerini sizin için yapabiliriz.</p>
-                        @if ($similar = $product->similarRequestUrl())
-                            <a href="{{ $similar }}" rel="noopener" class="btn-primary mt-3 inline-flex">benzerini iste</a>
+                        @if (session('similar_request_sent'))
+                            <p class="mt-3 text-[15px] font-medium text-ink">Talebinizi aldık, en kısa sürede size döneceğiz.</p>
+                        @else
+                            <button type="button" class="btn-primary mt-3 inline-flex" x-data @click="$dispatch('open-similar-request')">benzerini iste</button>
                         @endif
                     </div>
                 @endif
@@ -276,6 +278,10 @@
             </div>
         @endif
     </form>
+
+    @if ($isSold)
+        @include('shop.partials.similar-request', ['product' => $product])
+    @endif
 
     @if ($related->isNotEmpty())
         <section class="container-shop pt-16">

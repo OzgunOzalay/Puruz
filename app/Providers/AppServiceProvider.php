@@ -46,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('order-lookup', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
         RateLimiter::for('checkout', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
+        RateLimiter::for('similar-request', fn (Request $request) => Limit::perHour(5)->by($request->ip()));
 
         View::composer(['shop.*', 'orders.*', 'errors.*'], fn ($view) => $view->with('settings', Settings::all()));
 

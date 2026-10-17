@@ -7,6 +7,7 @@ use App\Http\Controllers\PackingSlipController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\SimilarRequestController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -24,6 +25,8 @@ Route::get('/urun/{slug}', [ShopController::class, 'product'])->name('shop.produ
 Route::get('/onizleme/urun/{product}', [ShopController::class, 'preview'])->name('shop.product.preview')->middleware('signed');
 Route::get('/p/{id}', [ShopController::class, 'short'])->name('shop.short')->whereNumber('id');
 Route::get('/link', [ShopController::class, 'linkInBio'])->name('shop.link');
+Route::post('/urun/{slug}/benzerini-iste', [SimilarRequestController::class, 'store'])
+    ->name('shop.similar-request')->middleware('throttle:similar-request');
 
 // Cart
 Route::get('/sepet', [CartController::class, 'show'])->name('cart.show');
