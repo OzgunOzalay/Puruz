@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PieceState;
 use App\Enums\ProductStatus;
 use App\Enums\ProductType;
 use App\Enums\ProductVisibility;
@@ -38,6 +39,7 @@ class Product extends Model
             'made_to_order' => 'boolean',
             'is_featured' => 'boolean',
             'published_at' => 'datetime',
+            'sold_at' => 'datetime',
         ];
     }
 
@@ -80,9 +82,54 @@ class Product extends Model
         $query->orderBy('sort_order')->latest('id');
     }
 
+    public function scopeGoods(Builder $query): void
+    {
+        $query->whereIn('type', ProductType::goods());
+    }
+
+    /** Published goods that have not been sold (reserved pieces included). */
+    public function scopeForSale(Builder $query): void
+    {
+        $query->goods()->where('status', ProductStatus::Published)->whereNull('sold_at');
+    }
+
+    public function scopeAvailableFirst(Builder $query): void
+    {
+        $query->orderByRaw('CASE WHEN sold_at IS NULL THEN 0 ELSE 1 END');
+    }
+
     public function isWorkshop(): bool
     {
         return $this->type === ProductType::Workshop;
+    }
+
+    public function isUnique(): bool
+    {
+        return $this->type === ProductType::Unique;
+    }
+
+    /** Null for workshops and mass-produced products. */
+    public function pieceState(): ?PieceState
+    {
+        if (! $this->isUnique()) {
+            return null;
+        }
+
+        return match (true) {
+            $this->sold_at !== null => PieceState::Sold,
+            $this->stock <= 0 => PieceState::Reserved,
+            default => PieceState::Available,
+        };
+    }
+
+    /** Next free automatic piece code: PRZ-0001, PRZ-0002, … */
+    public static function nextSku(): string
+    {
+        $last = static::withTrashed()->where('sku', 'like', 'PRZ-%')->pluck('sku')
+            ->map(fn (string $sku) => (int) substr($sku, 4))
+            ->max() ?? 0;
+
+        return 'PRZ-'.str_pad((string) ($last + 1), 4, '0', STR_PAD_LEFT);
     }
 
     public function isReachable(): bool

@@ -33,4 +33,14 @@ class ProductFactory extends Factory
     {
         return $this->state(['type' => ProductType::Workshop, 'track_stock' => false, 'price' => 320000]);
     }
+
+    public function unique(): static
+    {
+        return $this->state(['type' => ProductType::Unique, 'stock' => 1]);
+    }
+
+    public function sold(): static
+    {
+        return $this->state(['sold_at' => now()->subDays(2), 'stock' => 0]);
+    }
 }
