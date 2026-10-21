@@ -26,6 +26,7 @@ class DemoSeeder extends Seeder
             ['Kupalar', 'kupalar', 'Sabah kahvesinden akşam çayına, elde şekillenmiş kupalar.'],
             ['Tabaklar & Kaseler', 'tabaklar-kaseler', 'Sofranıza biraz pürüz katacak tabak ve kaseler.'],
             ['Vazolar', 'vazolar', 'Tek dal çiçek için bile yeter.'],
+            ['Mozaik', 'mozaik', 'Kırık seramik ve taş parçalardan, tek tek dizilmiş işler.'],
             ['Atölyeler', 'atolyeler', 'Mozaik ve seramik atölyeleri.'],
         ])->mapWithKeys(fn ($c, $i) => [$c[1] => Category::query()->create([
             'name' => $c[0], 'slug' => $c[1], 'description' => $c[2], 'sort_order' => $i,
@@ -59,7 +60,7 @@ class DemoSeeder extends Seeder
                 'status' => ProductStatus::Published,
                 'visibility' => ProductVisibility::Public,
                 'is_featured' => $featured,
-                'sort_order' => $i,
+                'sort_order' => $i + 1,
                 'published_at' => now()->subDays(20 - $i),
                 'sold_at' => $soldDaysAgo ? now()->subDays($soldDaysAgo) : null,
             ]);
@@ -83,6 +84,24 @@ class DemoSeeder extends Seeder
                 'published_at' => now()->subDays(3),
             ])->categories()->attach($categories['kupalar']);
         }
+
+        Product::query()->create([
+            'type' => ProductType::Unique,
+            'name' => 'Mozaik Ayna',
+            'slug' => 'mozaik-ayna',
+            'short_description' => 'Kırık çini, cam ve altın mozaikle çevrelenmiş duvar aynası.',
+            'description' => '<p>Kırık çini, el boyaması seramik ve altın cam mozaik parçaları tek tek dizildi; kenarı siyah beyaz damalı. Her parça tek; desen fotoğraftakiyle aynıdır.</p>',
+            'images' => [$this->storeImage('ayna-mozaik')],
+            'price' => 380000,
+            'dimensions' => '45 × 60 cm',
+            'materials' => 'Seramik, cam mozaik, ayna, ahşap taşıyıcı',
+            'care' => 'Nemli bezle silin. Doğrudan güneş alan ıslak alanlardan uzak tutun.',
+            'status' => ProductStatus::Published,
+            'visibility' => ProductVisibility::Public,
+            'is_featured' => true,
+            'sort_order' => 0,
+            'published_at' => now()->subDay(),
+        ])->categories()->attach($categories['mozaik']);
 
         Product::query()->create([
             'type' => ProductType::Unique,

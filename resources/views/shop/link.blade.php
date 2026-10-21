@@ -6,8 +6,11 @@
     {{-- Link-in-bio page: put this URL in the Instagram profile instead of a third-party link tool. --}}
     <div class="mx-auto max-w-md px-4 pt-8">
         <div class="flex flex-col items-center text-center">
-            <x-doodle.sun class="size-24" />
-            <p class="mt-3 font-hand text-2xl">{{ $settings['tagline'] }}</p>
+            <div class="relative">
+                <img src="{{ asset('images/site/atolye.webp') }}" alt="" width="96" height="96" class="size-24 rounded-full object-cover object-top ring-2 ring-ink ring-offset-4 ring-offset-paper">
+                <x-doodle.shards class="pointer-events-none absolute -right-7 -top-3 size-12" />
+            </div>
+            <p class="mt-4 font-hand text-2xl" data-reveal>{{ $settings['tagline'] }}</p>
         </div>
 
         <div class="mt-8 grid gap-3">
@@ -42,5 +45,7 @@
                 @endforeach
             </div>
         @endif
+
+        <x-doodle.building class="mt-14" :address="$settings['address'] ?: 'İsmet İnönü Sok. No:8, Konak / İzmir'" />
     </div>
 @endsection

@@ -5,12 +5,12 @@
 
 @section('content')
     <div class="container-shop pt-8 sm:pt-12">
-        <h1 class="text-5xl lowercase leading-none sm:text-6xl">{{ $search ? '“'.$search.'”' : $title }}</h1>
+        <h1 class="text-5xl lowercase leading-none sm:text-6xl" data-reveal>{{ $search ? '“'.$search.'”' : $title }}</h1>
         @if ($category?->description)
             <p class="mt-4 max-w-2xl text-[17px] text-ink-soft">{{ $category->description }}</p>
         @endif
 
-        <div class="-mx-4 mt-7 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
+        <div class="fade-edge-r -mx-4 mt-7 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0 sm:[mask-image:none] sm:[-webkit-mask-image:none]">
             <a href="{{ route('shop.index') }}" @class(['chip shrink-0', 'border-ink bg-ink !text-paper' => ! $category])>tümü</a>
             @foreach ($categories as $item)
                 <a href="{{ $item->url() }}" @class(['chip shrink-0 lowercase', 'border-ink bg-ink !text-paper' => $category?->is($item)])>{{ $item->name }}</a>
@@ -36,7 +36,7 @@
 
         @if ($products->isEmpty())
             <div class="flex flex-col items-center py-24 text-center">
-                <x-doodle.sun class="size-32 text-ink-faint" />
+                <x-doodle.sun class="spin-slow size-32 text-ink-faint" />
                 <p class="mt-6 font-hand text-2xl">burada henüz bir şey yok</p>
                 <p class="mt-2 text-ink-soft">Yeni parçalar fırından çıkınca burada olacak.</p>
                 <a href="{{ route('shop.index') }}" class="btn-outline mt-6">tüm ürünler</a>

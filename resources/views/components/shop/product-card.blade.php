@@ -5,14 +5,16 @@
     $dimmed = $piece ? $piece === \App\Enums\PieceState::Sold : ! $inStock;
     $stock = $product->hasVariants() || $product->isUnique() ? null : $product->availableStock();
     $cover = $product->coverImage();
+    // Each card gets one of four uneven tile shapes, stable per product.
+    $shard = 'shard-'.($product->id % 4 + 1);
 @endphp
-<a href="{{ $product->url() }}" class="group block">
-    <div class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-paper-deep">
+<a href="{{ $product->url() }}" class="group block" data-reveal="tile">
+    <div class="relative aspect-[4/5] overflow-hidden bg-paper-deep {{ $shard }}">
         @if ($cover)
             <img src="{{ \App\Support\ProductImages::url($cover, 800) }}"
                  @if ($srcset = \App\Support\ProductImages::srcset($cover)) srcset="{{ $srcset }}" sizes="(min-width: 1024px) 25vw, 50vw" @endif
                  alt="{{ $product->name }}" loading="lazy" decoding="async"
-                 class="size-full object-cover transition duration-500 group-hover:scale-[1.03] {{ $dimmed ? 'opacity-60 grayscale-[40%]' : '' }}">
+                 class="fade-in size-full object-cover transition duration-500 group-hover:scale-[1.03] {{ $dimmed ? 'opacity-60 grayscale-[40%]' : '' }}">
         @else
             <div class="flex size-full items-center justify-center text-ink-faint">
                 <x-doodle.sun class="size-2/3 opacity-40" />

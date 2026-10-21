@@ -4,13 +4,21 @@
 @section('description', 'Mozaik ve seramik atölyelerimize katılın: küçük gruplar, tüm malzemeler dahil.')
 
 @section('content')
+    {{-- Tesserae close-up behind the title, so the page opens on the material itself. --}}
+    <div class="relative overflow-hidden bg-ink">
+        <img src="{{ asset('images/site/tesserae.webp') }}" alt="" class="settle absolute inset-0 size-full object-cover opacity-55" fetchpriority="high">
+        <div class="relative container-shop py-14 text-paper sm:py-20">
+            <h1 class="text-6xl leading-none sm:text-7xl" data-reveal>atölyeler</h1>
+        </div>
+    </div>
+    <div class="checker-edge" aria-hidden="true"></div>
+
     <div class="container-shop pt-8 sm:pt-12">
         <div class="grid items-end gap-6 sm:grid-cols-[1fr_auto]">
             <div>
-                <h1 class="text-6xl leading-none sm:text-7xl">atölyeler</h1>
-                <p class="mt-4 max-w-xl text-[17px] text-ink-soft">Küçük gruplar halinde, tüm malzemeler bizden. Daha önce hiç deneyiminiz olmasa da olur; yeter ki elleriniz biraz kirlensin.</p>
+                <p class="max-w-xl text-[17px] text-ink-soft" data-reveal>Küçük gruplar halinde, tüm malzemeler bizden. Daha önce hiç deneyiminiz olmasa da olur; yeter ki elleriniz biraz kirlensin.</p>
             </div>
-            <x-doodle.sun class="hidden size-36 sm:block" />
+            <x-doodle.sun class="spin-slow hidden size-28 sm:block" />
         </div>
 
         @if ($workshops->isEmpty())

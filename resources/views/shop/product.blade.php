@@ -72,7 +72,7 @@
                         <img src="{{ ProductImages::url($image, 1600) }}"
                              @if ($srcset = ProductImages::srcset($image)) srcset="{{ $srcset }}" sizes="(min-width: 1024px) 55vw, 100vw" @endif
                              alt="{{ $product->name }} – görsel {{ $index + 1 }}"
-                             class="size-full shrink-0 snap-center bg-paper-deep object-cover"
+                             @class(['size-full shrink-0 snap-center bg-paper-deep object-cover', 'settle' => $index === 0, 'fade-in' => $index > 0])
                              @if ($index === 0) fetchpriority="high" @else loading="lazy" @endif>
                     @empty
                         <div class="flex size-full shrink-0 items-center justify-center bg-paper-deep"><x-doodle.sun class="size-1/2 text-ink-faint" /></div>
@@ -97,17 +97,17 @@
 
             <div class="pb-6">
                 @if ($product->categories->isNotEmpty())
-                    <div class="mb-3 flex flex-wrap gap-2">
+                    <div class="mb-3 flex flex-wrap gap-2" data-reveal>
                         @foreach ($product->categories as $category)
                             <a href="{{ $category->url() }}" class="chip lowercase hover:border-ink hover:text-ink">{{ $category->name }}</a>
                         @endforeach
                     </div>
                 @endif
 
-                <h1 class="text-4xl lowercase leading-[1.05] sm:text-5xl">{{ $product->name }}</h1>
-                <x-shop.price :product="$product" size="lg" class="mt-4" />
+                <h1 class="text-4xl lowercase leading-[1.05] sm:text-5xl" data-reveal>{{ $product->name }}</h1>
+                <x-shop.price :product="$product" size="lg" class="mt-4" data-reveal />
 
-                <div class="mt-3 flex flex-wrap gap-2 text-sm">
+                <div class="mt-3 flex flex-wrap gap-2 text-sm" data-reveal>
                     @if ($isSold)
                         <span class="badge bg-ink text-paper">satıldı</span>
                     @elseif ($isReserved)
@@ -123,7 +123,7 @@
                 </div>
 
                 @if ($product->short_description)
-                    <p class="mt-5 text-[17px] leading-relaxed text-ink-soft">{{ $product->short_description }}</p>
+                    <p class="mt-5 text-[17px] leading-relaxed text-ink-soft" data-reveal>{{ $product->short_description }}</p>
                 @endif
 
                 {{-- Variant (e.g. glaze colour) --}}
@@ -270,7 +270,7 @@
 
         {{-- Sticky buy bar for phones: the button is always under the thumb. --}}
         @if ($inStock)
-            <div class="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-paper/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 backdrop-blur sm:hidden">
+            <div class="slide-up fixed inset-x-0 bottom-0 z-30 border-t border-line bg-paper/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 backdrop-blur sm:hidden">
                 <div class="flex items-center gap-2">
                     <button type="submit" class="btn-outline flex-1 px-3">sepete ekle</button>
                     <button type="submit" formaction="{{ route('cart.buy-now') }}" class="btn-primary flex-[1.3] px-3">hemen al · {{ Money::format($product->price) }}</button>
@@ -284,7 +284,8 @@
     @endif
 
     @if ($related->isNotEmpty())
-        <section class="container-shop pt-16">
+        <div class="checker-edge mt-16" aria-hidden="true"></div>
+        <section class="container-shop pt-12">
             <x-shop.section-title title="bunlar da hoşunuza gidebilir" />
             <div class="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4">
                 @foreach ($related as $item)

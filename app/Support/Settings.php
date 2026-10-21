@@ -22,7 +22,7 @@ class Settings
             'contact_email' => 'merhaba@puruzatolye.com',
             'contact_phone' => '+90 530 275 99 94',
             'whatsapp_number' => '905302759994',
-            'instagram_handle' => 'puruzatolye',
+            'instagram_handle' => 'puruz.atolye',
             'address' => '',
             'legal_name' => '',
             'tax_office' => '',

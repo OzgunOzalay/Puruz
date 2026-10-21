@@ -1,8 +1,8 @@
 @php($next = $workshop->upcomingSessions->first(fn ($s) => $s->isBookable()))
-<a href="{{ $workshop->url() }}" class="group flex flex-col overflow-hidden rounded-[1.75rem] border border-line bg-paper">
+<a href="{{ $workshop->url() }}" class="shard-1 group flex flex-col overflow-hidden border border-line bg-paper" data-reveal="tile">
     <div class="relative aspect-[4/3] overflow-hidden bg-paper-deep">
         @if ($workshop->coverImage())
-            <img src="{{ $workshop->coverUrl(800) }}" alt="{{ $workshop->name }}" loading="lazy" class="size-full object-cover transition duration-500 group-hover:scale-[1.03]">
+            <img src="{{ $workshop->coverUrl(800) }}" alt="{{ $workshop->name }}" loading="lazy" class="fade-in size-full object-cover transition duration-500 group-hover:scale-[1.03]">
         @endif
     </div>
     <div class="flex flex-1 flex-col p-5">

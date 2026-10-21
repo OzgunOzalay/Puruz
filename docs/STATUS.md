@@ -1,6 +1,6 @@
 # Project status
 
-Last updated: 2026-10-16. Branch `claude/hopeful-gates-8lmvow` (local only, **not pushed**: stay local until the owner says the site is ready).
+Last updated: 2026-10-20. Branch `claude/hopeful-gates-8lmvow` (local only, **not pushed**: stay local until the owner says the site is ready).
 
 ## Running it locally
 
@@ -22,6 +22,9 @@ Last updated: 2026-10-16. Branch `claude/hopeful-gates-8lmvow` (local only, **no
    - Product add page polished.
    - Coupons and multi-user management removed: a single admin account.
    Spec: `docs/superpowers/specs/2026-10-16-admin-round-2-design.md`.
+
+4. **Storefront redesign (mosaic + ink sketch).** Brand photos from Instagram, tile-shaped cards, light scroll motion for phones, story and visit sections. Branch `storefront-redesign`.
+   Spec: `docs/superpowers/specs/2026-10-20-storefront-redesign-design.md`.
 
 ## Open items (owner to decide or set)
 

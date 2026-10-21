@@ -41,10 +41,13 @@
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
+    {{-- Hide reveal targets only when the app script can show them again; undo it if the script never runs. --}}
+    <script>document.documentElement.classList.add('motion');setTimeout(function(){if(!window.__motionReady)document.documentElement.classList.remove('motion')},2500)</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
 <body class="min-h-dvh">
+    <div class="checker-edge h-1.5 bg-[length:6px_6px]" aria-hidden="true"></div>
     <a href="#icerik" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper">İçeriğe geç</a>
 
     @if (! empty($settings['store_closed']))
@@ -86,7 +89,7 @@
                 <a href="{{ route('cart.show') }}" class="relative -mr-2 rounded-full p-2" aria-label="Sepet ({{ $cartCount }})">
                     <x-glyph name="bag" />
                     @if ($cartCount > 0)
-                        <span class="absolute right-0.5 top-0.5 flex size-[18px] items-center justify-center rounded-full bg-cobalt text-[11px] font-semibold text-paper">{{ $cartCount }}</span>
+                        <span class="absolute right-0.5 top-0.5 flex size-[18px] items-center justify-center rounded-full bg-cobalt text-[11px] font-semibold text-paper {{ session('cart_added') ? 'pop' : '' }}">{{ $cartCount }}</span>
                     @endif
                 </a>
             </div>
@@ -100,7 +103,7 @@
         </div>
 
         <div x-show="menu" x-collapse x-cloak class="border-t border-line/80 lg:hidden">
-            <nav class="container-shop flex flex-col py-3 font-hand text-2xl">
+            <nav class="menu-stagger container-shop flex flex-col py-3 font-hand text-2xl" :class="menu && 'is-open'">
                 <a href="{{ route('shop.index') }}" class="py-2">tüm ürünler</a>
                 @foreach ($menuCategories as $navCategory)
                     <a href="{{ $navCategory->url() }}" class="py-2 lowercase">{{ $navCategory->name }}</a>
@@ -134,10 +137,11 @@
         @include('shop.partials.cart-drawer')
     @endif
 
-    <footer class="mt-24 border-t border-line pb-[calc(env(safe-area-inset-bottom)+6rem)] pt-14 lg:pb-12">
+    <div class="checker-edge mt-24" aria-hidden="true"></div>
+    <footer class="bg-plaster/60 pb-[calc(env(safe-area-inset-bottom)+6rem)] pt-14 lg:pb-12">
         <div class="container-shop grid gap-10 md:grid-cols-[1.3fr_1fr_1fr]">
             <div class="flex items-start gap-5">
-                <x-doodle.sun class="size-24 shrink-0 text-ink" />
+                <x-doodle.sun class="spin-slow size-24 shrink-0 text-ink" />
                 <div>
                     <p class="font-hand text-3xl leading-tight">bize ulaşın</p>
                     <ul class="mt-3 space-y-2 text-[15px] text-ink-soft">
