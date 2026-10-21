@@ -23,7 +23,7 @@ Last updated: 2026-10-20. Branch `claude/hopeful-gates-8lmvow` (local only, **no
    - Coupons and multi-user management removed: a single admin account.
    Spec: `docs/superpowers/specs/2026-10-16-admin-round-2-design.md`.
 
-4. **Storefront redesign (mosaic + ink sketch).** Brand photos from Instagram, tile-shaped cards, light scroll motion for phones, story and visit sections. Branch `storefront-redesign`.
+4. **Storefront redesign (mosaic + ink sketch).** Brand photos from Instagram, tile-shaped cards, light scroll motion for phones, story and visit sections. Branch `storefront-redesign` (not merged yet; the owner approved the look).
    Spec: `docs/superpowers/specs/2026-10-20-storefront-redesign-design.md`.
 
 ## Open items (owner to decide or set)
@@ -43,6 +43,26 @@ Last updated: 2026-10-20. Branch `claude/hopeful-gates-8lmvow` (local only, **no
   - Kopyala on a trashed product produces a trashed copy.
   - The home page's featured strip doesn't put sold pieces last.
 - Later: deploy to a VPS following `docs/DEPLOY-VPS.md` (real domain, `SESSION_SECURE_COOKIE=true`, iyzico keys, SMTP).
+
+## Next: first VPS test (paused 2026-10-20, waiting for GoDaddy to create the VPS)
+
+Decided:
+- **Package:** GoDaddy VPS, 2 vCPU / 4 GB RAM, self-managed, Ubuntu 24.04 LTS, root SSH, 50 GB+ SSD, data centre in Europe if offered.
+- **Nothing else preinstalled:** no cPanel/Plesk, Apache, MySQL or PHP, since everything runs in Docker and a panel would clash on ports 80/443.
+- **No paid SSL:** Caddy gets and renews Let's Encrypt certificates automatically.
+- **Email** needs separate SMTP (a mailbox provider or a transactional service) for `MAIL_*`.
+
+Still to decide when picking up:
+1. Merge `storefront-redesign` into `claude/hopeful-gates-8lmvow` before building?
+2. How the code reaches the server: push to GitHub (needs the owner's OK) or rsync the source over SSH. With 4 GB, building on the server is fine.
+3. Domain pointed at the VPS, or test on the bare IP (`SERVER_NAME=":80"`, `APP_URL=http://IP`, `SESSION_SECURE_COOKIE=false`)?
+
+Server setup checklist:
+1. Add 1–2 GB swap.
+2. Open ports 80/443 in both the GoDaddy firewall panel and `ufw`.
+3. Install Docker.
+4. Set up `.env`, starting with `PAYMENT_GATEWAY=fake`.
+5. `docker compose up -d`, then `db:seed` and `db:seed --class=DemoSeeder`.
 
 ## Working agreements
 
