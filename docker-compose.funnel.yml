@@ -1,0 +1,12 @@
+# Local only (git-excluded): serve the trial stack through Tailscale Funnel.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.funnel.yml up -d
+services:
+  app:
+    environment:
+      APP_URL: https://ubuntu24-home.tail3ad131.ts.net
+  worker:
+    environment:
+      APP_URL: https://ubuntu24-home.tail3ad131.ts.net
+  scheduler:
+    environment:
+      APP_URL: https://ubuntu24-home.tail3ad131.ts.net
